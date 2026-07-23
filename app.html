@@ -124,7 +124,7 @@
   <div id="root"></div>
   <script>
     if (sessionStorage.getItem('wp_auth') !== '1') window.location.href = '/';
-    window.WP_API_URL = 'YOUR_RAILWAY_URL';
+    window.WP_API_URL = 'https://wp-prospector-backend-production.up.railway.app';
   </script>
   <script type="text/babel">
     const API_BASE = window.WP_API_URL || 'http://localhost:3001';
