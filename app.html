@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WP Prospector — Client Scout AI</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #0d0d0f; color: #e8e4dc; font-family: Georgia, 'Times New Roman', serif; }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #0a0a08; }
+    ::-webkit-scrollbar-thumb { background: #2e2510; border-radius: 3px; }
+    input[type=range] { -webkit-appearance: none; width: 100%; height: 4px; background: #2e2510; border-radius: 2px; outline: none; }
+    input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: #c8922a; border-radius: 50%; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+    <script>
+    // Auth check — redirect to login if not authenticated
+    if (sessionStorage.getItem('wp_auth') !== '1') {
+      window.location.href = '/';
+    }
+    // Inject Railway API URL — set this in netlify.toml or manually below
+    // Replace YOUR_RAILWAY_URL with your actual Railway deployment URL
+    window.WP_API_URL = 'wp-prospector-backend-production.up.railway.app';
+  </script>
+  <script type="text/babel">
+    // ── API base URL ─────────────────────────────────────────────
+    // For local dev: http://localhost:3001
+    // For production: set this to your Railway URL, e.g. https://wp-prospector.up.railway.app
+    const API_BASE = window.WP_API_URL || 'http://localhost:3001';
+
+    const { useState, useRef, useEffect } = React;
+
+    const PC = { High: "#ff4d4d", Medium: "#ffaa00", Low: "#44cc88" };
+    const PB = { High: "#ff4d4d22", Medium: "#ffaa0022", Low: "#44cc8822" };
+    const SC = { new: "#9a8a6a", contacted: "#ffaa00", won: "#44cc88", lost: "#ff4d4d" };
+
+    const inputStyle = {
+      width: "100%", background: "#131108", border: "1px solid #2e2510",
+      color: "#e8e4dc", padding: "10px 12px", borderRadius: 6,
+      fontSize: 14, fontFamily: "Georgia,serif", outline: "none"
+    };
+
+    const RADIUS_OPTIONS = [1, 3, 5, 10];
+
+    // Estimate scan time and business count
+    function estimateScan(miles) {
+      const counts = { 1: "~50", 3: "~200", 5: "~400", 10: "~800" };
+      const times  = { 1: "~5 min", 3: "~15 min", 5: "~25 min", 10: "~45 min" };
+      return { count: counts[miles] || "varies", time: times[miles] || "varies" };
+    }
+
+    // ── Main App ──────────────────────────────────────────────
+    function App() {
+      const [tab, setTab] = useState("scan");
+      return (
+        <div style={{ minHeight: "100vh", background: "#0d0d0f", color: "#e8e4dc", fontFamily: "Georgia,serif" }}>
+          <div style={{ background: "linear-gradient(135deg,#1a1208,#0d0d0f)", borderBottom: "1px solid #2a2010", padding: "20px 40px", display: "flex", alignItems: "center", gap: 32 }}>
+            <div>
+              <div style={{ fontSize: 10, letterSpacing: 4, color: "#8a6a20", textTransform: "uppercase", marginBottom: 2 }}>WordPress Prospector</div>
+              <h1 style={{ margin: 0, fontSize: 24, fontWeight: 700, color: "#f0e6c8" }}>Client Scout <span style={{ color: "#c8922a" }}>AI</span></h1>
+            </div>
+            <div style={{ display: "flex", gap: 4, marginLeft: 40 }}>
+              {[["scan","🔍 New Scan"],["prospects","📋 All Prospects"],["history","📅 Scan History"]].map(([t, label]) => (
+                <button key={t} onClick={() => setTab(t)} style={{
+                  background: tab===t ? "#c8922a" : "transparent",
+                  color: tab===t ? "#fff" : "#7a6030",
+                  border: `1px solid ${tab===t ? "#c8922a" : "#2e2510"}`,
+                  borderRadius: 6, padding: "7px 16px", fontSize: 13,
+                  cursor: "pointer", fontFamily: "Georgia,serif"
+                }}>{label}</button>
+              ))}
+            </div>
+          </div>
+          {tab === "scan"      && <ScanTab />}
+          {tab === "prospects" && <ProspectsTab />}
+          {tab === "history"   && <HistoryTab />}
+        </div>
+      );
+    }
+
+    // ── SCAN TAB ──────────────────────────────────────────────
+    function ScanTab() {
+      const [zip, setZip]           = useState("76102");
+      const [radius, setRadius]     = useState(3);
+      const [leads, setLeads]       = useState([]);
+      const [scanning, setScanning] = useState(false);
+      const [log, setLog]           = useState([]);
+      const [selectedLead, setSelectedLead] = useState(null);
+      const [outreach, setOutreach] = useState("");
+      const [generating, setGenerating] = useState(false);
+      const [filter, setFilter]     = useState("All");
+      const [statuses, setStatuses] = useState({});
+      const [cached, setCached]     = useState(false);
+      const logRef = useRef(null);
+      const est = estimateScan(radius);
+
+      useEffect(() => {
+        if (logRef.current) logRef.current.scrollTop = logRef.current.scrollHeight;
+      }, [log]);
+
+      function addLog(msg, type = "info") {
+        setLog(prev => [...prev, { msg, type }]);
+      }
+
+      function runScan(force = false) {
+        if (zip.length !== 5) return;
+        setLeads([]); setLog([]); setSelectedLead(null); setOutreach(''); setScanning(true); setCached(false);
+
+        const url = `${API_BASE}/prospect/stream?zip=${zip}&radiusMiles=${radius}&force=${force}`;
+        const es = new EventSource(url);
+
+        es.onmessage = (e) => {
+          const data = JSON.parse(e.data);
+
+          if (data.type === 'log') {
+            setLog(prev => [...prev, { msg: data.msg, type: data.logType || 'info' }]);
+          }
+          else if (data.type === 'lead') {
+            // Lead arrives live — add to list immediately
+            setLeads(prev => {
+              const updated = [...prev, data.lead];
+              return updated.sort((a, b) => b.score - a.score);
+            });
+          }
+          else if (data.type === 'done') {
+            if (data.cached) setCached(true);
+            setScanning(false);
+            es.close();
+          }
+          else if (data.type === 'error') {
+            setLog(prev => [...prev, { msg: '❌ ' + data.msg, type: 'error' }]);
+            setLog(prev => [...prev, { msg: '   Is your backend running at localhost:3001?', type: 'error' }]);
+            setScanning(false);
+            es.close();
+          }
+        };
+
+        es.onerror = () => {
+          if (es.readyState === EventSource.CLOSED) return; // normal close
+          setLog(prev => [...prev, { msg: '❌ Connection lost. Is your backend running?', type: 'error' }]);
+          setScanning(false);
+          es.close();
+        };
+      }
+      async function generateOutreach(lead) {
+        setSelectedLead(lead); setOutreach(""); setGenerating(true);
+        try {
+          const res = await fetch(`${API_BASE}/generate-email`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ lead })
+          });
+          const data = await res.json();
+          setOutreach(data.email || "Could not generate email.");
+        } catch (e) {
+          setOutreach("Error generating email. Is your backend running?");
+        }
+        setGenerating(false);
+      }
+
+      async function updateStatus(lead, status) {
+        setStatuses(prev => ({ ...prev, [lead.id]: status }));
+        await fetch(`${API_BASE}/prospects/${lead.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status })
+        });
+      }
+
+      const filtered = filter === "All" ? leads : leads.filter(l => l.priority === filter);
+      const canScan = zip.length === 5 && !scanning;
+
+      return (
+        <div style={{ display: "flex", height: "calc(100vh - 73px)" }}>
+
+          {/* LEFT PANEL */}
+          <div style={{ width: 290, borderRight: "1px solid #1e1a10", padding: "24px 20px", display: "flex", flexDirection: "column", gap: 18 }}>
+
+            {/* Zip */}
+            <div>
+              <label style={{ fontSize: 11, letterSpacing: 3, color: "#7a6030", textTransform: "uppercase", display: "block", marginBottom: 8 }}>Zip Code</label>
+              <input type="text" value={zip} onChange={e => setZip(e.target.value.replace(/\D/g,"").slice(0,5))}
+                placeholder="76102" maxLength={5}
+                style={{ ...inputStyle, border: `1px solid ${zip.length===5?"#c8922a":"#2e2510"}`, letterSpacing: 2 }} />
+              {zip.length > 0 && zip.length < 5 && <div style={{ fontSize: 11, color: "#ff6b6b", marginTop: 4 }}>Enter 5-digit zip</div>}
+            </div>
+
+            {/* Radius slider */}
+            <div>
+              <label style={{ fontSize: 11, letterSpacing: 3, color: "#7a6030", textTransform: "uppercase", display: "block", marginBottom: 8 }}>
+                Search Radius: <span style={{ color: "#c8922a" }}>{radius} mile{radius > 1 ? "s" : ""}</span>
+              </label>
+              <input type="range" min="1" max="10" step="1" value={radius}
+                onChange={e => setRadius(Number(e.target.value))} />
+              <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6 }}>
+                {RADIUS_OPTIONS.map(r => (
+                  <span key={r} onClick={() => setRadius(r)} style={{ fontSize: 11, color: radius===r?"#c8922a":"#5a4a30", cursor: "pointer" }}>{r}mi</span>
+                ))}
+              </div>
+              <div style={{ marginTop: 10, background: "#0a0a08", border: "1px solid #1e1a10", borderRadius: 6, padding: "8px 12px", fontSize: 11, color: "#7a6a50" }}>
+                <div>📊 Est. businesses: <span style={{ color: "#c8922a" }}>{est.count}</span></div>
+                <div style={{ marginTop: 3 }}>⏱ Est. scan time: <span style={{ color: "#c8922a" }}>{est.time}</span></div>
+              </div>
+            </div>
+
+            {/* Scan button */}
+            <div style={{ display: "flex", gap: 8 }}>
+              <button onClick={() => runScan(false)} disabled={!canScan} style={{
+                flex: 1, background: canScan ? "linear-gradient(135deg,#c8922a,#a06818)" : "#1e1a10",
+                color: canScan ? "#fff" : "#4a4030", border: "none", borderRadius: 8,
+                padding: "12px 0", fontSize: 13, fontWeight: 700, letterSpacing: 1,
+                cursor: canScan ? "pointer" : "not-allowed", textTransform: "uppercase", fontFamily: "Georgia,serif"
+              }}>{scanning ? "⏳ Scanning..." : "🚀 Scan Area"}</button>
+              {cached && (
+                <button onClick={() => runScan(true)} title="Force fresh scan" style={{
+                  background: "#1e1a10", color: "#c8922a", border: "1px solid #3e3010",
+                  borderRadius: 8, padding: "12px 14px", fontSize: 14, cursor: "pointer", fontFamily: "Georgia,serif"
+                }}>↻</button>
+              )}
+            </div>
+
+            {/* Log */}
+            <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+              <div style={{ fontSize: 11, letterSpacing: 3, color: "#7a6030", textTransform: "uppercase", marginBottom: 6 }}>Agent Log</div>
+              <div ref={logRef} style={{ flex: 1, background: "#0a0a08", border: "1px solid #1e1a10", borderRadius: 6, padding: 10, overflowY: "auto", fontSize: 11, lineHeight: 1.7, fontFamily: "monospace", minHeight: 160, maxHeight: 280 }}>
+                {log.length === 0 && <div style={{ color: "#3a3020" }}>Awaiting scan...</div>}
+                {log.map((l, i) => (
+                  <div key={i} style={{ color: l.type==="success"?"#7dc47d":l.type==="error"?"#ff6b6b":"#9a8a6a", marginBottom: 1 }}>{l.msg}</div>
+                ))}
+              </div>
+            </div>
+
+            {/* Summary */}
+            {leads.length > 0 && (
+              <div style={{ background: "#131108", border: "1px solid #2e2510", borderRadius: 8, padding: "12px 14px" }}>
+                <div style={{ fontSize: 10, color: "#7a6030", letterSpacing: 2, textTransform: "uppercase", marginBottom: 6 }}>Results</div>
+                {["High","Medium","Low"].map(p => (
+                  <div key={p} style={{ display: "flex", justifyContent: "space-between", marginBottom: 3, fontSize: 12 }}>
+                    <span style={{ color: PC[p] }}>● {p} Priority</span>
+                    <span style={{ color: "#9a8a6a" }}>{leads.filter(l=>l.priority===p).length}</span>
+                  </div>
+                ))}
+                <div style={{ borderTop: "1px solid #2e2510", marginTop: 6, paddingTop: 6, fontSize: 12, color: "#7a6a50" }}>
+                  Total: <span style={{ color: "#c8922a" }}>{leads.length}</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* MIDDLE PANEL */}
+          <div style={{ flex: 1, padding: "20px 24px", overflowY: "auto", borderRight: "1px solid #1e1a10" }}>
+            {leads.length === 0 && !scanning && (
+              <div style={{ textAlign: "center", marginTop: 80, color: "#3a3020" }}>
+                <div style={{ fontSize: 44, marginBottom: 12 }}>🗺️</div>
+                <div style={{ fontSize: 15, fontStyle: "italic" }}>Enter a zip code, set your radius,<br />and scan the area for WordPress sites.</div>
+              </div>
+            )}
+            {scanning && leads.length === 0 && (
+              <div style={{ textAlign: "center", marginTop: 80, color: "#5a5040" }}>
+                <div style={{ fontSize: 44, marginBottom: 12 }}>⏳</div>
+                <div style={{ fontSize: 14, fontStyle: "italic" }}>Scanning area... this may take a few minutes.<br />Check the agent log for live progress.</div>
+              </div>
+            )}
+            {leads.length > 0 && (
+              <>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+                  <span style={{ fontSize: 12, color: "#7a6030" }}>Priority:</span>
+                  {["All","High","Medium","Low"].map(f => (
+                    <button key={f} onClick={() => setFilter(f)} style={{
+                      background: filter===f?"#c8922a":"#131108", color: filter===f?"#fff":"#7a6030",
+                      border: "1px solid #2e2510", borderRadius: 20, padding: "3px 12px",
+                      fontSize: 11, cursor: "pointer", fontFamily: "Georgia,serif"
+                    }}>{f}</button>
+                  ))}
+                  <span style={{ marginLeft: "auto", fontSize: 11, color: "#5a5040" }}>{filtered.length} leads</span>
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  {filtered.map(lead => (
+                    <LeadCard key={lead.id} lead={lead}
+                      selected={selectedLead?.id===lead.id}
+                      status={statuses[lead.id] || lead.status}
+                      onClick={() => generateOutreach(lead)}
+                      onStatus={s => updateStatus(lead, s)} />
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* RIGHT PANEL */}
+          <div style={{ width: 340, padding: "20px 24px", display: "flex", flexDirection: "column" }}>
+            <div style={{ fontSize: 11, letterSpacing: 3, color: "#7a6030", textTransform: "uppercase", marginBottom: 14 }}>AI Outreach Email</div>
+            {!selectedLead && <div style={{ color: "#3a3020", fontSize: 12, fontStyle: "italic", marginTop: 40, textAlign: "center" }}>Click any lead to generate<br />a personalized email.</div>}
+            {selectedLead && (
+              <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 12 }}>
+                <div style={{ background: "#131108", border: "1px solid #2e2510", borderRadius: 8, padding: "10px 12px" }}>
+                  <div style={{ fontWeight: 700, color: "#f0e6c8", fontSize: 13 }}>{selectedLead.name}</div>
+                  <div style={{ fontSize: 11, color: "#5a5040", fontStyle: "italic" }}>{selectedLead.website || selectedLead.domain}</div>
+                </div>
+                {generating && <div style={{ color: "#c8922a", fontSize: 12, fontStyle: "italic", textAlign: "center", marginTop: 16 }}>✍️ Crafting email...</div>}
+                {outreach && !generating && (
+                  <>
+                    <textarea value={outreach} onChange={e => setOutreach(e.target.value)} style={{
+                      flex: 1, background: "#0a0a08", border: "1px solid #2e2510", color: "#d8d0b8",
+                      borderRadius: 8, padding: 12, fontSize: 12, lineHeight: 1.7,
+                      fontFamily: "Georgia,serif", resize: "none", outline: "none", minHeight: 260
+                    }} />
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <button onClick={() => navigator.clipboard.writeText(outreach)} style={{
+                        flex: 1, background: "#1e1a10", color: "#c8922a", border: "1px solid #3e3010",
+                        borderRadius: 8, padding: 9, fontSize: 12, cursor: "pointer", fontFamily: "Georgia,serif"
+                      }}>📋 Copy</button>
+                      <button onClick={() => updateStatus(selectedLead, "contacted")} style={{
+                        flex: 1, background: "linear-gradient(135deg,#2a6a2a,#1a4a1a)", color: "#88dd88",
+                        border: "1px solid #2a4a2a", borderRadius: 8, padding: 9, fontSize: 12,
+                        cursor: "pointer", fontFamily: "Georgia,serif"
+                      }}>✅ Mark Contacted</button>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    // ── PROSPECTS TAB ─────────────────────────────────────────
+    function ProspectsTab() {
+      const [prospects, setProspects] = useState([]);
+      const [loading, setLoading]     = useState(true);
+      const [filter, setFilter]       = useState("All");
+      const [statusFilter, setStatusFilter] = useState("All");
+      const [selected, setSelected]   = useState(null);
+      const [outreach, setOutreach]   = useState("");
+      const [generating, setGenerating] = useState(false);
+      const [editingNotes, setEditingNotes] = useState(false);
+      const [notes, setNotes]         = useState("");
+
+      useEffect(() => { loadProspects(); }, []);
+
+      async function loadProspects() {
+        setLoading(true);
+        try {
+          const res = await fetch(`${API_BASE}/prospects`);
+          const data = await res.json();
+          setProspects(data.prospects || []);
+        } catch (e) { console.error(e); }
+        setLoading(false);
+      }
+
+      async function updateStatus(id, status) {
+        await fetch(`${API_BASE}/prospects/${id}`, {
+          method: "PATCH", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status })
+        });
+        setProspects(prev => prev.map(p => p.id===id ? {...p, status} : p));
+        if (selected?.id === id) setSelected(prev => ({...prev, status}));
+      }
+
+      async function saveNotes(id) {
+        await fetch(`${API_BASE}/prospects/${id}`, {
+          method: "PATCH", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ notes })
+        });
+        setProspects(prev => prev.map(p => p.id===id ? {...p, notes} : p));
+        setEditingNotes(false);
+      }
+
+      async function generateOutreach(lead) {
+        setOutreach(""); setGenerating(true);
+        try {
+          const res = await fetch(`${API_BASE}/generate-email`, {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ lead })
+          });
+          const data = await res.json();
+          setOutreach(data.email || "Could not generate email.");
+        } catch (e) { setOutreach("Error generating email."); }
+        setGenerating(false);
+      }
+
+      function selectLead(lead) {
+        setSelected(lead); setOutreach(""); setNotes(lead.notes||""); setEditingNotes(false);
+        generateOutreach(lead);
+      }
+
+      let filtered = prospects;
+      if (filter !== "All")       filtered = filtered.filter(p => p.priority === filter);
+      if (statusFilter !== "All") filtered = filtered.filter(p => p.status === statusFilter);
+
+      const statusCounts = { new: 0, contacted: 0, won: 0, lost: 0 };
+      prospects.forEach(p => { if (statusCounts[p.status] !== undefined) statusCounts[p.status]++; });
+
+      return (
+        <div style={{ display: "flex", height: "calc(100vh - 73px)" }}>
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", borderRight: "1px solid #1e1a10" }}>
+            {/* Status bar */}
+            <div style={{ display: "flex", borderBottom: "1px solid #1e1a10" }}>
+              {Object.entries(statusCounts).map(([s, c]) => (
+                <div key={s} onClick={() => setStatusFilter(statusFilter===s?"All":s)} style={{
+                  flex: 1, padding: "12px 0", textAlign: "center", cursor: "pointer",
+                  borderRight: "1px solid #1e1a10", background: statusFilter===s?"#1a1208":"transparent"
+                }}>
+                  <div style={{ fontSize: 20, fontWeight: 700, color: SC[s] }}>{c}</div>
+                  <div style={{ fontSize: 10, color: "#5a5040", textTransform: "uppercase", letterSpacing: 1 }}>{s}</div>
+                </div>
+              ))}
+            </div>
+            {/* Filter bar */}
+            <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 20px", borderBottom: "1px solid #1e1a10" }}>
+              <span style={{ fontSize: 11, color: "#7a6030" }}>Priority:</span>
+              {["All","High","Medium","Low"].map(f => (
+                <button key={f} onClick={() => setFilter(f)} style={{
+                  background: filter===f?"#c8922a":"#131108", color: filter===f?"#fff":"#7a6030",
+                  border: "1px solid #2e2510", borderRadius: 20, padding: "2px 10px",
+                  fontSize: 11, cursor: "pointer", fontFamily: "Georgia,serif"
+                }}>{f}</button>
+              ))}
+              <button onClick={loadProspects} style={{ marginLeft: "auto", background: "transparent", color: "#7a6030", border: "1px solid #2e2510", borderRadius: 6, padding: "3px 10px", fontSize: 11, cursor: "pointer", fontFamily: "Georgia,serif" }}>↻ Refresh</button>
+            </div>
+            {/* List */}
+            <div style={{ flex: 1, overflowY: "auto", padding: "12px 20px" }}>
+              {loading && <div style={{ color: "#5a5040", textAlign: "center", marginTop: 40 }}>Loading...</div>}
+              {!loading && filtered.length === 0 && <div style={{ color: "#3a3020", textAlign: "center", marginTop: 40, fontStyle: "italic" }}>No prospects yet. Run a scan!</div>}
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {filtered.map(lead => (
+                  <LeadCard key={lead.id} lead={lead} selected={selected?.id===lead.id}
+                    status={lead.status} onClick={() => selectLead(lead)}
+                    onStatus={s => updateStatus(lead.id, s)} />
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Detail panel */}
+          <div style={{ width: 360, padding: "20px 24px", display: "flex", flexDirection: "column", overflowY: "auto" }}>
+            {!selected && <div style={{ color: "#3a3020", fontSize: 12, fontStyle: "italic", marginTop: 40, textAlign: "center" }}>Select a prospect to view details.</div>}
+            {selected && (
+              <>
+                <div style={{ marginBottom: 14 }}>
+                  <div style={{ fontWeight: 700, color: "#f0e6c8", fontSize: 16 }}>{selected.name}</div>
+                  <a href={selected.website} target="_blank" style={{ fontSize: 12, color: "#c8922a", textDecoration: "none" }}>{selected.website}</a>
+                  {selected.phone && <div style={{ fontSize: 12, color: "#7a6a50", marginTop: 4 }}>📞 {selected.phone}</div>}
+                  {selected.address && <div style={{ fontSize: 11, color: '#5a5040', marginTop: 2 }}>{selected.address}</div>}
+                {selected.screenshot && (
+                  <div style={{ marginTop: 12, borderRadius: 8, overflow: 'hidden', border: '1px solid #2e2510', background: '#0a0a08' }}>
+                    <div style={{ fontSize: 10, color: '#5a4a30', padding: '5px 8px', borderBottom: '1px solid #1e1a10', letterSpacing: 2, textTransform: 'uppercase' }}>Site Preview</div>
+                    <img src={selected.screenshot} style={{ width: '100%', display: 'block', maxHeight: 180, objectFit: 'cover', objectPosition: 'top' }} alt='site preview' />
+                  </div>
+                )}
+                </div>
+                <div style={{ display: "flex", gap: 6, marginBottom: 14, flexWrap: "wrap" }}>
+                  {["new","contacted","won","lost"].map(s => (
+                    <button key={s} onClick={() => updateStatus(selected.id, s)} style={{
+                      background: selected.status===s ? SC[s]+"33" : "transparent",
+                      color: SC[s], border: `1px solid ${SC[s]}44`,
+                      borderRadius: 20, padding: "3px 12px", fontSize: 11, cursor: "pointer", fontFamily: "Georgia,serif"
+                    }}>{s.charAt(0).toUpperCase()+s.slice(1)}</button>
+                  ))}
+                </div>
+                <div style={{ marginBottom: 14 }}>
+                  <div style={{ fontSize: 10, color: "#7a6030", letterSpacing: 2, textTransform: "uppercase", marginBottom: 6 }}>Issues Found</div>
+                  {(selected.issues||[]).map(iss => (
+                    <div key={iss} style={{ fontSize: 12, color: "#9a8060", marginBottom: 3 }}>⚠ {iss}</div>
+                  ))}
+                </div>
+                <div style={{ marginBottom: 14 }}>
+                  <div style={{ fontSize: 10, color: "#7a6030", letterSpacing: 2, textTransform: "uppercase", marginBottom: 6, display: "flex", justifyContent: "space-between" }}>
+                    Notes
+                    <button onClick={() => setEditingNotes(!editingNotes)} style={{ background: "none", border: "none", color: "#c8922a", fontSize: 10, cursor: "pointer", fontFamily: "Georgia,serif" }}>{editingNotes?"cancel":"edit"}</button>
+                  </div>
+                  {editingNotes ? (
+                    <>
+                      <textarea value={notes} onChange={e => setNotes(e.target.value)} style={{ ...inputStyleInline, height: 80, resize: "none", fontSize: 12 }} />
+                      <button onClick={() => saveNotes(selected.id)} style={{ marginTop: 6, background: "#c8922a", color: "#fff", border: "none", borderRadius: 6, padding: "6px 14px", fontSize: 12, cursor: "pointer", fontFamily: "Georgia,serif" }}>Save</button>
+                    </>
+                  ) : (
+                    <div style={{ fontSize: 12, color: selected.notes?"#c8b89a":"#3a3020", fontStyle: selected.notes?"normal":"italic" }}>{selected.notes||"No notes yet..."}</div>
+                  )}
+                </div>
+                <div style={{ fontSize: 10, color: "#7a6030", letterSpacing: 2, textTransform: "uppercase", marginBottom: 6 }}>Outreach Email</div>
+                {generating && <div style={{ color: "#c8922a", fontSize: 12, fontStyle: "italic" }}>✍️ Generating...</div>}
+                {outreach && !generating && (
+                  <>
+                    <textarea value={outreach} onChange={e => setOutreach(e.target.value)} style={{
+                      flex: 1, background: "#0a0a08", border: "1px solid #2e2510", color: "#d8d0b8",
+                      borderRadius: 8, padding: 10, fontSize: 11, lineHeight: 1.7,
+                      fontFamily: "Georgia,serif", resize: "none", outline: "none", minHeight: 200
+                    }} />
+                    <button onClick={() => navigator.clipboard.writeText(outreach)} style={{
+                      marginTop: 8, background: "#1e1a10", color: "#c8922a", border: "1px solid #3e3010",
+                      borderRadius: 8, padding: 9, fontSize: 12, cursor: "pointer", fontFamily: "Georgia,serif", width: "100%"
+                    }}>📋 Copy Email</button>
+                  </>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    const inputStyleInline = {
+      width: "100%", background: "#131108", border: "1px solid #2e2510",
+      color: "#e8e4dc", padding: "10px 12px", borderRadius: 6,
+      fontSize: 14, fontFamily: "Georgia,serif", outline: "none"
+    };
+
+    // ── HISTORY TAB ───────────────────────────────────────────
+    function HistoryTab() {
+      const [scans, setScans]     = useState([]);
+      const [loading, setLoading] = useState(true);
+
+      useEffect(() => {
+        (async () => {
+          try {
+            const res = await fetch(`${API_BASE}/scans`);
+            const data = await res.json();
+            setScans(data.scans || []);
+          } catch (e) { console.error(e); }
+          setLoading(false);
+        })();
+      }, []);
+
+      return (
+        <div style={{ padding: "28px 40px", maxWidth: 800 }}>
+          <div style={{ fontSize: 11, letterSpacing: 3, color: "#7a6030", textTransform: "uppercase", marginBottom: 20 }}>Scan History</div>
+          {loading && <div style={{ color: "#5a5040" }}>Loading...</div>}
+          {!loading && scans.length === 0 && <div style={{ color: "#3a3020", fontStyle: "italic" }}>No scans yet. Run your first scan!</div>}
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {scans.map(scan => (
+              <div key={scan.id} style={{ background: "#111009", border: "1px solid #1e1a10", borderRadius: 10, padding: "16px 20px", display: "flex", alignItems: "center", gap: 20 }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 700, color: "#f0e6c8", fontSize: 14 }}>📍 Zip {scan.zip} — {scan.radius} mile radius</div>
+                  <div style={{ fontSize: 12, color: "#5a5040", marginTop: 2 }}>{scan.created_at}</div>
+                </div>
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ fontSize: 22, fontWeight: 700, color: "#c8922a" }}>{scan.found}</div>
+                  <div style={{ fontSize: 10, color: "#5a5040", textTransform: "uppercase", letterSpacing: 1 }}>WP Found</div>
+                </div>
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ fontSize: 22, fontWeight: 700, color: "#7a6a50" }}>{scan.scanned}</div>
+                  <div style={{ fontSize: 10, color: "#5a5040", textTransform: "uppercase", letterSpacing: 1 }}>Scanned</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    // ── SHARED: Lead Card ─────────────────────────────────────
+    function LeadCard({ lead, selected, status, onClick, onStatus }) {
+      const [imgError, setImgError] = React.useState(false);
+      return (
+        <div onClick={onClick} style={{
+          background: selected ? '#1a1408' : '#111009',
+          border: `1px solid ${selected ? '#c8922a' : '#1e1a10'}`,
+          borderRadius: 10, cursor: 'pointer', transition: 'border-color 0.15s',
+          overflow: 'hidden', display: 'flex'
+        }}>
+          {/* Screenshot thumbnail */}
+          <div style={{ width: 90, minHeight: 70, flexShrink: 0, background: '#0a0a08', borderRight: '1px solid #1e1a10', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            {lead.screenshot && !imgError ? (
+              <img src={lead.screenshot} onError={() => setImgError(true)}
+                style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', display: 'block' }}
+                alt={lead.name} />
+            ) : (
+              <div style={{ fontSize: 22, opacity: 0.2 }}>🌐</div>
+            )}
+          </div>
+          {/* Content */}
+          <div style={{ flex: 1, padding: '12px 14px', minWidth: 0 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontWeight: 700, fontSize: 14, color: '#f0e6c8', marginBottom: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{lead.name}</div>
+                <div style={{ fontSize: 11, color: '#5a5040', fontStyle: 'italic' }}>{lead.domain}</div>
+              </div>
+              <div style={{ display: 'flex', gap: 5, marginLeft: 8, flexShrink: 0 }}>
+                <span style={{ background: PB[lead.priority], color: PC[lead.priority], border: `1px solid ${PC[lead.priority]}44`, borderRadius: 20, padding: '2px 8px', fontSize: 10, fontWeight: 700 }}>{lead.priority}</span>
+                <span style={{ background: SC[status]+'22', color: SC[status], border: `1px solid ${SC[status]}44`, borderRadius: 20, padding: '2px 8px', fontSize: 10 }}>{status}</span>
+              </div>
+            </div>
+            <div style={{ marginTop: 6, display: 'flex', gap: 5, flexWrap: 'wrap' }}>
+              {(lead.issues||[]).slice(0,3).map(iss => (
+                <span key={iss} style={{ background: '#1e1808', border: '1px solid #2e2510', borderRadius: 4, padding: '1px 6px', fontSize: 10, color: '#8a7050' }}>{iss}</span>
+              ))}
+              {(lead.issues||[]).length > 3 && <span style={{ fontSize: 10, color: '#5a4a30' }}>+{lead.issues.length-3} more</span>}
+            </div>
+            <div style={{ marginTop: 6, display: 'flex', gap: 12, fontSize: 10, color: '#5a5040' }}>
+              {lead.wpVersion && <span>WP {lead.wpVersion}</span>}
+              <span style={{ color: '#ff6b6b' }}>⚡ {lead.score}/100</span>
+              {lead.phone && <span>📞 {lead.phone}</span>}
+            </div>
+          </div>
+        </div>
+      );
+    }
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>
