@@ -3,124 +3,72 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>WP Prospector // CLIENT SCOUT AI</title>
+  <title>WP Prospector</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --green:     #00ff88;
-      --green-dim: #00cc66;
-      --green-glow: rgba(0,255,136,0.15);
-      --green-faint: rgba(0,255,136,0.06);
-      --red:       #ff3355;
-      --yellow:    #ffcc00;
-      --cyan:      #00ccff;
-      --bg:        #020c08;
-      --bg2:       #040f0a;
-      --bg3:       #071510;
-      --border:    rgba(0,255,136,0.12);
-      --border2:   rgba(0,255,136,0.25);
-      --text:      #a0ffcc;
-      --text-dim:  #3a7a58;
-      --text-faint:#1a3a28;
-      --mono:      'Share Tech Mono', monospace;
-      --ui:        'Rajdhani', sans-serif;
+      --bg:        #0e1117;
+      --bg-card:   #161b27;
+      --bg-hover:  #1c2333;
+      --bg-input:  #0a0d14;
+      --border:    #2a3142;
+      --border-focus: #5271ff;
+      --accent:    #5271ff;
+      --accent-hover: #6b87ff;
+      --accent-bg: rgba(82,113,255,0.1);
+      --green:     #23c55e;
+      --green-bg:  rgba(35,197,94,0.1);
+      --red:       #ef4444;
+      --red-bg:    rgba(239,68,68,0.1);
+      --yellow:    #f59e0b;
+      --yellow-bg: rgba(245,158,11,0.1);
+      --cyan:      #06b6d4;
+      --text:      #e2e8f0;
+      --text-muted:#8892a4;
+      --text-faint:#4a5568;
+      --radius:    8px;
+      --radius-sm: 6px;
+      --shadow:    0 1px 3px rgba(0,0,0,0.4);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.5);
     }
 
     html, body { height: 100%; overflow: hidden; }
+    body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; font-size: 14px; line-height: 1.5; }
 
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: var(--mono);
-      /* Subtle scanline overlay */
-      background-image: repeating-linear-gradient(
-        0deg,
-        transparent,
-        transparent 2px,
-        rgba(0,255,136,0.012) 2px,
-        rgba(0,255,136,0.012) 4px
-      );
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3a4560; }
+
+    input[type=range] {
+      -webkit-appearance: none; width: 100%; height: 4px;
+      background: var(--border); border-radius: 2px; outline: none; cursor: pointer;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 16px; height: 16px;
+      background: var(--accent); border-radius: 50%; cursor: pointer;
+      box-shadow: 0 0 0 3px rgba(82,113,255,0.2);
     }
 
-    /* Scrollbars */
-    ::-webkit-scrollbar { width: 4px; height: 4px; }
-    ::-webkit-scrollbar-track { background: var(--bg); }
-    ::-webkit-scrollbar-thumb { background: var(--green-dim); border-radius: 2px; }
-
-    /* Range slider */
-    input[type=range] { -webkit-appearance: none; width: 100%; height: 2px; background: var(--border2); border-radius: 1px; outline: none; cursor: pointer; }
-    input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; background: var(--green); border-radius: 50%; cursor: pointer; box-shadow: 0 0 8px var(--green); }
-
-    /* Glowing text */
-    .glow { text-shadow: 0 0 10px var(--green), 0 0 20px rgba(0,255,136,0.4); }
-    .glow-red { text-shadow: 0 0 10px var(--red); }
-    .glow-yellow { text-shadow: 0 0 10px var(--yellow); }
-
-    /* Animated cursor blink */
-    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
-    .cursor::after { content: '█'; animation: blink 1s infinite; margin-left: 2px; font-size: 0.8em; }
-
-    /* Scan line animation */
-    @keyframes scanline {
-      0% { transform: translateY(-100%); }
-      100% { transform: translateY(100vh); }
-    }
-
-    /* Pulse ring */
-    @keyframes pulse-ring {
-      0% { box-shadow: 0 0 0 0 rgba(0,255,136,0.4); }
-      70% { box-shadow: 0 0 0 8px rgba(0,255,136,0); }
-      100% { box-shadow: 0 0 0 0 rgba(0,255,136,0); }
-    }
-    .pulse { animation: pulse-ring 2s infinite; }
-
-    /* Fade in for lead cards */
-    @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(8px); }
+    @keyframes fadeSlideIn {
+      from { opacity: 0; transform: translateY(6px); }
       to   { opacity: 1; transform: translateY(0); }
     }
-    .fade-in { animation: fadeInUp 0.3s ease forwards; }
+    .fade-in { animation: fadeSlideIn 0.25s ease forwards; }
 
-    /* Tab active indicator */
-    .tab-active { position: relative; }
-    .tab-active::after {
-      content: '';
-      position: absolute;
-      bottom: -1px; left: 0; right: 0;
-      height: 2px;
-      background: var(--green);
-      box-shadow: 0 0 8px var(--green);
-    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spin { animation: spin 1s linear infinite; display: inline-block; }
 
-    /* Grid bg pattern */
-    .grid-bg {
-      background-image:
-        linear-gradient(rgba(0,255,136,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0,255,136,0.03) 1px, transparent 1px);
-      background-size: 32px 32px;
-    }
-
-    /* Corner brackets */
-    .bracket {
-      position: relative;
-    }
-    .bracket::before, .bracket::after {
-      content: '';
-      position: absolute;
-      width: 8px; height: 8px;
-      border-color: var(--green-dim);
-      border-style: solid;
-    }
-    .bracket::before { top: -1px; left: -1px; border-width: 1px 0 0 1px; }
-    .bracket::after  { top: -1px; right: -1px; border-width: 1px 1px 0 0; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+    .pulse { animation: pulse 2s ease-in-out infinite; }
   </style>
 </head>
-<body class="grid-bg">
+<body>
   <div id="root"></div>
   <script>
     if (sessionStorage.getItem('wp_auth') !== '1') window.location.href = '/';
@@ -128,126 +76,171 @@
   </script>
   <script type="text/babel">
     const API_BASE = window.WP_API_URL || 'http://localhost:3001';
-    const { useState, useRef, useEffect, useCallback } = React;
+    const { useState, useRef, useEffect } = React;
 
-    // ── Color maps ────────────────────────────────────────────
-    const PC  = { High: "#ff3355", Medium: "#ffcc00", Low: "#00ff88" };
-    const PCG = { High: "rgba(255,51,85,0.1)", Medium: "rgba(255,204,0,0.1)", Low: "rgba(0,255,136,0.1)" };
-    const SC  = { new: "#00ccff", contacted: "#ffcc00", won: "#00ff88", lost: "#ff3355" };
+    const PRIORITY_COLOR = { High: "var(--red)",    Medium: "var(--yellow)", Low: "var(--green)" };
+    const PRIORITY_BG    = { High: "var(--red-bg)", Medium: "var(--yellow-bg)", Low: "var(--green-bg)" };
+    const STATUS_COLOR   = { new: "var(--cyan)", contacted: "var(--yellow)", won: "var(--green)", lost: "var(--red)" };
+    const STATUS_BG      = { new: "rgba(6,182,212,0.1)", contacted: "var(--yellow-bg)", won: "var(--green-bg)", lost: "var(--red-bg)" };
 
     const RADIUS_OPTIONS = [1, 3, 5, 10];
-    function estimateScan(m) {
-      return {
-        count: { 1:"~50", 3:"~200", 5:"~400", 10:"~800" }[m] || "varies",
-        time:  { 1:"~5m",  3:"~15m",  5:"~25m",  10:"~45m" }[m] || "varies"
-      };
+    const EST = {
+      count: { 1:"~50",  3:"~200",  5:"~400",  10:"~800" },
+      time:  { 1:"~5m",  3:"~15m",  5:"~25m",  10:"~45m" }
+    };
+
+    // ── Shared components ─────────────────────────────────────
+
+    function Chip({ label, color, bg }) {
+      return (
+        <span style={{
+          display: "inline-flex", alignItems: "center", gap: 4,
+          background: bg, color, border: `1px solid ${color}33`,
+          borderRadius: 20, padding: "2px 9px", fontSize: 11, fontWeight: 600,
+          letterSpacing: 0.3, whiteSpace: "nowrap"
+        }}>{label}</span>
+      );
     }
 
-    // ── Shared UI primitives ──────────────────────────────────
-    const Label = ({ children, style }) => (
-      <div style={{ fontFamily: "'Rajdhani',sans-serif", fontSize: 10, fontWeight: 700,
-        letterSpacing: 3, color: "var(--text-dim)", textTransform: "uppercase",
-        marginBottom: 6, ...style }}>{children}</div>
-    );
-
-    const GlowInput = ({ style, ...props }) => (
-      <input style={{
-        width: "100%", background: "var(--bg2)", border: "1px solid var(--border2)",
-        color: "var(--green)", padding: "9px 12px", borderRadius: 3,
-        fontSize: 14, fontFamily: "var(--mono)", outline: "none",
-        transition: "border-color 0.2s, box-shadow 0.2s",
-        ...style
-      }} {...props} />
-    );
-
-    const GlowBtn = ({ children, onClick, disabled, style, variant = "primary" }) => {
-      const [hover, setHover] = useState(false);
-      const base = variant === "primary" ? {
-        background: disabled ? "var(--bg2)" : hover ? "rgba(0,255,136,0.15)" : "transparent",
-        color: disabled ? "var(--text-faint)" : "var(--green)",
-        border: `1px solid ${disabled ? "var(--border)" : hover ? "var(--green)" : "var(--border2)"}`,
-        boxShadow: !disabled && hover ? "0 0 12px rgba(0,255,136,0.2), inset 0 0 12px rgba(0,255,136,0.05)" : "none",
-      } : {
-        background: hover ? "rgba(0,204,255,0.1)" : "transparent",
-        color: "var(--cyan)",
-        border: `1px solid ${hover ? "var(--cyan)" : "rgba(0,204,255,0.2)"}`,
-        boxShadow: hover ? "0 0 8px rgba(0,204,255,0.2)" : "none",
-      };
+    function SectionLabel({ children }) {
       return (
-        <button onClick={onClick} disabled={disabled}
-          onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
-          style={{ fontFamily: "var(--ui)", fontSize: 12, fontWeight: 700,
-            letterSpacing: 2, textTransform: "uppercase", borderRadius: 3,
-            padding: "10px 16px", cursor: disabled ? "not-allowed" : "pointer",
-            transition: "all 0.15s", ...base, ...style }}>
+        <div style={{ fontSize: 11, fontWeight: 600, color: "var(--text-muted)",
+          letterSpacing: 0.8, textTransform: "uppercase", marginBottom: 8 }}>
+          {children}
+        </div>
+      );
+    }
+
+    function Card({ children, style }) {
+      return (
+        <div style={{ background: "var(--bg-card)", border: "1px solid var(--border)",
+          borderRadius: var(--radius), ...style }}>
+          {children}
+        </div>
+      );
+    }
+
+    function StatBox({ value, label, color }) {
+      return (
+        <div style={{ textAlign: "center", padding: "12px 16px",
+          background: "var(--bg-card)", border: "1px solid var(--border)",
+          borderRadius: var(--radius) }}>
+          <div style={{ fontSize: 24, fontWeight: 700, color: color || "var(--text)", lineHeight: 1 }}>{value}</div>
+          <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 4, fontWeight: 500 }}>{label}</div>
+        </div>
+      );
+    }
+
+    function PrimaryBtn({ children, onClick, disabled, loading, style }) {
+      return (
+        <button onClick={onClick} disabled={disabled || loading} style={{
+          background: disabled ? "var(--bg-hover)" : "var(--accent)",
+          color: disabled ? "var(--text-faint)" : "#fff",
+          border: "none", borderRadius: var(--radius-sm),
+          padding: "10px 20px", fontSize: 14, fontWeight: 600,
+          cursor: disabled ? "not-allowed" : "pointer",
+          display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+          transition: "background 0.15s, transform 0.1s",
+          width: "100%", ...style
+        }}
+          onMouseEnter={e => { if (!disabled) e.currentTarget.style.background = "var(--accent-hover)"; }}
+          onMouseLeave={e => { if (!disabled) e.currentTarget.style.background = disabled ? "var(--bg-hover)" : "var(--accent)"; }}
+          onMouseDown={e => { if (!disabled) e.currentTarget.style.transform = "scale(0.98)"; }}
+          onMouseUp={e => { e.currentTarget.style.transform = "scale(1)"; }}
+        >
+          {loading && <span className="spin" style={{ fontSize: 12 }}>⟳</span>}
           {children}
         </button>
       );
-    };
+    }
 
-    const Badge = ({ label, color, bg }) => (
-      <span style={{ background: bg || `${color}15`, color, border: `1px solid ${color}44`,
-        borderRadius: 2, padding: "1px 7px", fontSize: 10,
-        fontFamily: "var(--ui)", fontWeight: 700, letterSpacing: 1.5,
-        textTransform: "uppercase" }}>{label}</span>
-    );
+    function GhostBtn({ children, onClick, style }) {
+      return (
+        <button onClick={onClick} style={{
+          background: "transparent", color: "var(--text-muted)",
+          border: "1px solid var(--border)", borderRadius: var(--radius-sm),
+          padding: "9px 14px", fontSize: 13, fontWeight: 500,
+          cursor: "pointer", transition: "all 0.15s", ...style
+        }}
+          onMouseEnter={e => { e.currentTarget.style.background = "var(--bg-hover)"; e.currentTarget.style.color = "var(--text)"; e.currentTarget.style.borderColor = "#3a4560"; }}
+          onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--text-muted)"; e.currentTarget.style.borderColor = "var(--border)"; }}
+        >
+          {children}
+        </button>
+      );
+    }
 
-    // ── App shell ─────────────────────────────────────────────
+    function FilterPill({ label, active, color, onClick }) {
+      return (
+        <button onClick={onClick} style={{
+          background: active ? (color ? `${color}18` : "var(--accent-bg)") : "transparent",
+          color: active ? (color || "var(--accent)") : "var(--text-muted)",
+          border: `1px solid ${active ? (color ? `${color}55` : "var(--accent)") : "var(--border)"}`,
+          borderRadius: 20, padding: "4px 14px", fontSize: 12, fontWeight: 600,
+          cursor: "pointer", transition: "all 0.15s", whiteSpace: "nowrap"
+        }}>{label}</button>
+      );
+    }
+
+    function DarkInput({ value, onChange, placeholder, style, ...props }) {
+      const [focused, setFocused] = useState(false);
+      return (
+        <input value={value} onChange={onChange} placeholder={placeholder}
+          onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
+          style={{
+            width: "100%", background: "var(--bg-input)",
+            border: `1px solid ${focused ? "var(--border-focus)" : "var(--border)"}`,
+            boxShadow: focused ? "0 0 0 3px rgba(82,113,255,0.15)" : "none",
+            color: "var(--text)", padding: "9px 12px", borderRadius: var(--radius-sm),
+            fontSize: 14, fontFamily: "Inter,sans-serif", outline: "none",
+            transition: "border-color 0.15s, box-shadow 0.15s", ...style
+          }} {...props} />
+      );
+    }
+
+    // ── App ───────────────────────────────────────────────────
     function App() {
       const [tab, setTab] = useState("scan");
-      const tabs = [["scan","// SCAN"], ["prospects","// PROSPECTS"], ["history","// HISTORY"]];
 
       return (
-        <div style={{ display: "flex", flexDirection: "column", height: "100vh", overflow: "hidden" }}>
-          {/* Top bar */}
+        <div style={{ display: "flex", flexDirection: "column", height: "100vh" }}>
+          {/* Header */}
           <header style={{
-            display: "flex", alignItems: "center", padding: "0 24px",
-            height: 52, borderBottom: "1px solid var(--border)",
-            background: "rgba(0,0,0,0.6)", backdropFilter: "blur(10px)",
-            flexShrink: 0, gap: 32, position: "relative", zIndex: 10
+            height: 56, display: "flex", alignItems: "center",
+            padding: "0 24px", borderBottom: "1px solid var(--border)",
+            background: "var(--bg-card)", flexShrink: 0,
+            gap: 32, position: "relative", zIndex: 10
           }}>
-            {/* Logo */}
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <div style={{ width: 8, height: 8, background: "var(--green)",
-                borderRadius: "50%", boxShadow: "0 0 8px var(--green)" }}
-                className="pulse" />
-              <span style={{ fontFamily: "var(--ui)", fontWeight: 700, fontSize: 14,
-                letterSpacing: 3, color: "var(--green)" }} className="glow">
-                WP_PROSPECTOR
-              </span>
-              <span style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--text-dim)",
-                borderLeft: "1px solid var(--border)", paddingLeft: 10, marginLeft: 2 }}>
-                CLIENT SCOUT AI v2.0
-              </span>
+              <div style={{ width: 28, height: 28, background: "var(--accent)",
+                borderRadius: 7, display: "flex", alignItems: "center",
+                justifyContent: "center", fontSize: 14 }}>⚡</div>
+              <div>
+                <div style={{ fontWeight: 700, fontSize: 15, color: "var(--text)", lineHeight: 1.1 }}>WP Prospector</div>
+                <div style={{ fontSize: 11, color: "var(--text-muted)" }}>Client Scout AI</div>
+              </div>
             </div>
 
-            {/* Tabs */}
-            <nav style={{ display: "flex", gap: 0, marginLeft: 16 }}>
-              {tabs.map(([t, label]) => (
-                <button key={t} onClick={() => setTab(t)}
-                  className={tab === t ? "tab-active" : ""}
-                  style={{
-                    background: "none", border: "none", borderBottom: "2px solid transparent",
-                    color: tab === t ? "var(--green)" : "var(--text-dim)",
-                    fontFamily: "var(--mono)", fontSize: 12, padding: "0 18px",
-                    height: 52, cursor: "pointer", letterSpacing: 1,
-                    transition: "color 0.15s",
-                    textShadow: tab === t ? "0 0 8px var(--green)" : "none"
-                  }}>{label}</button>
+            <nav style={{ display: "flex", gap: 2 }}>
+              {[["scan","🔍  Scan"], ["prospects","📋  Prospects"], ["history","📅  History"]].map(([t, label]) => (
+                <button key={t} onClick={() => setTab(t)} style={{
+                  background: tab===t ? "var(--bg-hover)" : "transparent",
+                  color: tab===t ? "var(--text)" : "var(--text-muted)",
+                  border: "1px solid " + (tab===t ? "var(--border)" : "transparent"),
+                  borderRadius: var(--radius-sm), padding: "6px 14px",
+                  fontSize: 13, fontWeight: 500, cursor: "pointer",
+                  transition: "all 0.15s"
+                }}>{label}</button>
               ))}
             </nav>
 
-            {/* Right status */}
-            <div style={{ marginLeft: "auto", display: "flex", gap: 16, alignItems: "center" }}>
-              <span style={{ fontSize: 10, color: "var(--text-dim)", fontFamily: "var(--mono)" }}>
-                SYS:ONLINE
-              </span>
-              <div style={{ width: 6, height: 6, background: "var(--green)",
-                borderRadius: "50%", boxShadow: "0 0 6px var(--green)" }} />
+            <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{ width: 8, height: 8, borderRadius: "50%",
+                background: "var(--green)" }} className="pulse" />
+              <span style={{ fontSize: 12, color: "var(--text-muted)", fontWeight: 500 }}>System Online</span>
             </div>
           </header>
 
-          {/* Content */}
           <div style={{ flex: 1, overflow: "hidden" }}>
             {tab === "scan"      && <ScanTab />}
             {tab === "prospects" && <ProspectsTab />}
@@ -263,7 +256,7 @@
       const [radius, setRadius]     = useState(3);
       const [leads, setLeads]       = useState([]);
       const [scanning, setScanning] = useState(false);
-      const [log, setLog]           = useState([{ msg: "SYSTEM READY. AWAITING COORDINATES.", type: "system" }]);
+      const [log, setLog]           = useState([]);
       const [selectedLead, setSelectedLead] = useState(null);
       const [outreach, setOutreach] = useState("");
       const [generating, setGenerating] = useState(false);
@@ -271,48 +264,31 @@
       const [cached, setCached]     = useState(false);
       const [statuses, setStatuses] = useState({});
       const logRef = useRef(null);
-      const est = estimateScan(radius);
 
       useEffect(() => {
         if (logRef.current) logRef.current.scrollTop = logRef.current.scrollHeight;
       }, [log]);
 
       function addLog(msg, type = "info") {
-        setLog(prev => [...prev, { msg, type, ts: new Date().toLocaleTimeString('en-US', { hour12: false }) }]);
+        setLog(prev => [...prev, { msg, type }]);
       }
 
       function runScan(force = false) {
         if (zip.length !== 5) return;
-        setLeads([]); setLog([]); setSelectedLead(null); setOutreach(""); setScanning(true); setCached(false);
-        addLog(`INITIATING SCAN // ZIP:${zip} RADIUS:${radius}mi`, "system");
+        setLeads([]); setLog([]); setSelectedLead(null); setOutreach("");
+        setScanning(true); setCached(false);
+        addLog(`Starting ${radius}-mile scan around ${zip}...`);
 
-        const url = `${API_BASE}/prospect/stream?zip=${zip}&radiusMiles=${radius}&force=${force}`;
-        const es = new EventSource(url);
+        const es = new EventSource(`${API_BASE}/prospect/stream?zip=${zip}&radiusMiles=${radius}&force=${force}`);
 
         es.onmessage = (e) => {
           const data = JSON.parse(e.data);
-          if (data.type === "log") {
-            addLog(data.msg, data.logType || "info");
-          } else if (data.type === "lead") {
-            setLeads(prev => [...prev, data.lead].sort((a, b) => b.score - a.score));
-          } else if (data.type === "done") {
-            if (data.cached) setCached(true);
-            addLog(`SCAN COMPLETE // ${data.total} TARGETS ACQUIRED`, "success");
-            setScanning(false);
-            es.close();
-          } else if (data.type === "error") {
-            addLog(`ERROR: ${data.msg}`, "error");
-            setScanning(false);
-            es.close();
-          }
+          if (data.type === "log")  addLog(data.msg, data.logType);
+          else if (data.type === "lead") setLeads(prev => [...prev, data.lead].sort((a,b) => b.score-a.score));
+          else if (data.type === "done") { if (data.cached) setCached(true); setScanning(false); es.close(); }
+          else if (data.type === "error") { addLog(data.msg, "error"); setScanning(false); es.close(); }
         };
-
-        es.onerror = () => {
-          if (es.readyState === EventSource.CLOSED) return;
-          addLog("CONNECTION LOST", "error");
-          setScanning(false);
-          es.close();
-        };
+        es.onerror = () => { if (es.readyState !== EventSource.CLOSED) { addLog("Connection lost.", "error"); setScanning(false); es.close(); } };
       }
 
       async function generateOutreach(lead) {
@@ -323,8 +299,8 @@
             body: JSON.stringify({ lead })
           });
           const data = await res.json();
-          setOutreach(data.email || "ERROR: Could not generate.");
-        } catch (e) { setOutreach("ERROR: Backend unreachable."); }
+          setOutreach(data.email || "Could not generate email.");
+        } catch(e) { setOutreach("Error: backend unreachable."); }
         setGenerating(false);
       }
 
@@ -337,146 +313,159 @@
       }
 
       const filtered = filter === "All" ? leads : leads.filter(l => l.priority === filter);
-      const counts = { High: leads.filter(l=>l.priority==="High").length, Medium: leads.filter(l=>l.priority==="Medium").length, Low: leads.filter(l=>l.priority==="Low").length };
+      const high = leads.filter(l=>l.priority==="High").length;
+      const med  = leads.filter(l=>l.priority==="Medium").length;
+      const low  = leads.filter(l=>l.priority==="Low").length;
 
       return (
         <div style={{ display: "flex", height: "100%", overflow: "hidden" }}>
 
-          {/* ── LEFT: Control panel ── */}
-          <div style={{ width: 260, borderRight: "1px solid var(--border)", padding: "20px 16px",
-            display: "flex", flexDirection: "column", gap: 16, overflow: "hidden", flexShrink: 0,
-            background: "rgba(0,0,0,0.3)" }}>
+          {/* LEFT SIDEBAR */}
+          <div style={{ width: 272, borderRight: "1px solid var(--border)",
+            display: "flex", flexDirection: "column", flexShrink: 0,
+            background: "var(--bg-card)", overflow: "hidden" }}>
+            <div style={{ padding: "20px 16px", flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: 20 }}>
 
-            <div>
-              <Label>Target Zone // Zip</Label>
-              <GlowInput type="text" value={zip}
-                onChange={e => setZip(e.target.value.replace(/\D/,"").slice(0,5))}
-                maxLength={5} placeholder="00000"
-                style={{ fontSize: 20, letterSpacing: 6, textAlign: "center",
-                  borderColor: zip.length === 5 ? "var(--green)" : "var(--border2)",
-                  boxShadow: zip.length === 5 ? "0 0 10px rgba(0,255,136,0.15)" : "none" }} />
-            </div>
-
-            <div>
-              <Label>Sweep Radius // <span style={{ color: "var(--green)" }}>{radius} mile{radius>1?"s":""}</span></Label>
-              <input type="range" min="1" max="10" step="1" value={radius}
-                onChange={e => setRadius(Number(e.target.value))} />
-              <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6 }}>
-                {RADIUS_OPTIONS.map(r => (
-                  <span key={r} onClick={() => setRadius(r)}
-                    style={{ fontSize: 10, color: radius===r ? "var(--green)" : "var(--text-faint)",
-                      cursor: "pointer", fontFamily: "var(--ui)", fontWeight: 700,
-                      textShadow: radius===r ? "0 0 6px var(--green)" : "none" }}>{r}MI</span>
-                ))}
+              {/* Zip input */}
+              <div>
+                <SectionLabel>Zip Code</SectionLabel>
+                <DarkInput value={zip} placeholder="76102" maxLength={5}
+                  onChange={e => setZip(e.target.value.replace(/\D/,"").slice(0,5))}
+                  style={{ fontSize: 22, letterSpacing: 8, textAlign: "center", fontWeight: 600,
+                    borderColor: zip.length===5 ? "var(--accent)" : "var(--border)" }} />
+                {zip.length > 0 && zip.length < 5 &&
+                  <div style={{ fontSize: 11, color: "var(--red)", marginTop: 4 }}>Enter a 5-digit zip code</div>}
               </div>
-            </div>
 
-            {/* Est box */}
-            <div style={{ background: "var(--green-faint)", border: "1px solid var(--border)", borderRadius: 3, padding: "10px 12px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-                <span style={{ fontSize: 10, color: "var(--text-dim)", fontFamily: "var(--ui)", letterSpacing: 1 }}>EST.TARGETS</span>
-                <span style={{ fontSize: 11, color: "var(--green)" }}>{est.count}</span>
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <span style={{ fontSize: 10, color: "var(--text-dim)", fontFamily: "var(--ui)", letterSpacing: 1 }}>EST.RUNTIME</span>
-                <span style={{ fontSize: 11, color: "var(--green)" }}>{est.time}</span>
-              </div>
-            </div>
-
-            {/* Scan button */}
-            <div style={{ display: "flex", gap: 8 }}>
-              <GlowBtn onClick={() => runScan(false)} disabled={zip.length !== 5 || scanning}
-                style={{ flex: 1, padding: "12px 0", fontSize: 13, letterSpacing: 3 }}>
-                {scanning ? "SCANNING..." : "► SCAN"}
-              </GlowBtn>
-              {cached && (
-                <GlowBtn onClick={() => runScan(true)} variant="secondary" style={{ padding: "12px 14px" }}>↻</GlowBtn>
-              )}
-            </div>
-
-            {/* Stats */}
-            {leads.length > 0 && (
-              <div style={{ borderTop: "1px solid var(--border)", paddingTop: 12 }}>
-                <Label>Targets Acquired</Label>
-                {Object.entries(counts).map(([p, c]) => (
-                  <div key={p} style={{ display: "flex", justifyContent: "space-between",
-                    alignItems: "center", marginBottom: 5 }}>
-                    <span style={{ fontSize: 10, color: PC[p], fontFamily: "var(--ui)",
-                      fontWeight: 700, letterSpacing: 1 }}>● {p.toUpperCase()}</span>
-                    <span style={{ fontSize: 12, color: PC[p],
-                      textShadow: `0 0 6px ${PC[p]}` }}>{c}</span>
-                  </div>
-                ))}
-                <div style={{ borderTop: "1px solid var(--border)", marginTop: 6, paddingTop: 6,
-                  display: "flex", justifyContent: "space-between" }}>
-                  <span style={{ fontSize: 10, color: "var(--text-dim)", fontFamily: "var(--ui)", letterSpacing: 1 }}>TOTAL</span>
-                  <span style={{ fontSize: 12, color: "var(--green)" }} className="glow">{leads.length}</span>
+              {/* Radius */}
+              <div>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                  <SectionLabel style={{ marginBottom: 0 }}>Search Radius</SectionLabel>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: "var(--accent)" }}>{radius} mi</span>
+                </div>
+                <input type="range" min="1" max="10" step="1" value={radius}
+                  onChange={e => setRadius(Number(e.target.value))} />
+                <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8 }}>
+                  {RADIUS_OPTIONS.map(r => (
+                    <button key={r} onClick={() => setRadius(r)} style={{
+                      background: radius===r ? "var(--accent-bg)" : "transparent",
+                      color: radius===r ? "var(--accent)" : "var(--text-faint)",
+                      border: `1px solid ${radius===r ? "var(--accent)55" : "var(--border)"}`,
+                      borderRadius: 4, padding: "3px 8px", fontSize: 11,
+                      fontWeight: 600, cursor: "pointer"
+                    }}>{r}mi</button>
+                  ))}
                 </div>
               </div>
-            )}
 
-            {/* Log */}
-            <div style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}>
-              <Label>Ops Log</Label>
-              <div ref={logRef} style={{ flex: 1, background: "var(--bg)", border: "1px solid var(--border)",
-                borderRadius: 3, padding: "8px 10px", overflowY: "auto", fontSize: 10,
-                lineHeight: 1.8, fontFamily: "var(--mono)", minHeight: 80 }}>
-                {log.map((l, i) => (
-                  <div key={i} style={{ color:
-                    l.type==="success" ? "var(--green)" :
-                    l.type==="error"   ? "var(--red)" :
-                    l.type==="system"  ? "var(--cyan)" :
-                    "var(--text-dim)", marginBottom: 1 }}>
-                    {l.ts && <span style={{ color: "var(--text-faint)", marginRight: 6 }}>[{l.ts}]</span>}
-                    {l.msg}
+              {/* Estimates */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                <div style={{ background: "var(--bg)", border: "1px solid var(--border)",
+                  borderRadius: var(--radius-sm), padding: "10px 12px" }}>
+                  <div style={{ fontSize: 16, fontWeight: 700, color: "var(--text)" }}>{EST.count[radius]}</div>
+                  <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>Est. businesses</div>
+                </div>
+                <div style={{ background: "var(--bg)", border: "1px solid var(--border)",
+                  borderRadius: var(--radius-sm), padding: "10px 12px" }}>
+                  <div style={{ fontSize: 16, fontWeight: 700, color: "var(--text)" }}>{EST.time[radius]}</div>
+                  <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>Est. runtime</div>
+                </div>
+              </div>
+
+              {/* Scan button */}
+              <div style={{ display: "flex", gap: 8 }}>
+                <PrimaryBtn onClick={() => runScan(false)} disabled={zip.length!==5} loading={scanning}
+                  style={{ flex: 1, padding: "11px" }}>
+                  {scanning ? "Scanning..." : "Run Scan"}
+                </PrimaryBtn>
+                {cached && (
+                  <GhostBtn onClick={() => runScan(true)} style={{ padding: "11px 14px", fontSize: 16 }}>↻</GhostBtn>
+                )}
+              </div>
+
+              {/* Results summary */}
+              {leads.length > 0 && (
+                <div>
+                  <SectionLabel>Results</SectionLabel>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 6 }}>
+                    <div style={{ background: "var(--red-bg)", border: "1px solid var(--red)33",
+                      borderRadius: var(--radius-sm), padding: "8px", textAlign: "center" }}>
+                      <div style={{ fontSize: 18, fontWeight: 700, color: "var(--red)" }}>{high}</div>
+                      <div style={{ fontSize: 10, color: "var(--text-muted)", fontWeight: 500 }}>High</div>
+                    </div>
+                    <div style={{ background: "var(--yellow-bg)", border: "1px solid var(--yellow)33",
+                      borderRadius: var(--radius-sm), padding: "8px", textAlign: "center" }}>
+                      <div style={{ fontSize: 18, fontWeight: 700, color: "var(--yellow)" }}>{med}</div>
+                      <div style={{ fontSize: 10, color: "var(--text-muted)", fontWeight: 500 }}>Med</div>
+                    </div>
+                    <div style={{ background: "var(--green-bg)", border: "1px solid var(--green)33",
+                      borderRadius: var(--radius-sm), padding: "8px", textAlign: "center" }}>
+                      <div style={{ fontSize: 18, fontWeight: 700, color: "var(--green)" }}>{low}</div>
+                      <div style={{ fontSize: 10, color: "var(--text-muted)", fontWeight: 500 }}>Low</div>
+                    </div>
                   </div>
-                ))}
-                {scanning && <div style={{ color: "var(--green)" }} className="cursor"> </div>}
+                </div>
+              )}
+
+              {/* Log */}
+              <div style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}>
+                <SectionLabel>Activity Log</SectionLabel>
+                <div ref={logRef} style={{
+                  flex: 1, background: "var(--bg)", border: "1px solid var(--border)",
+                  borderRadius: var(--radius-sm), padding: "10px 12px",
+                  overflowY: "auto", fontSize: 11.5, lineHeight: 1.75,
+                  fontFamily: "'Courier New', monospace", minHeight: 120, maxHeight: 240
+                }}>
+                  {log.length === 0 && <span style={{ color: "var(--text-faint)" }}>Awaiting scan...</span>}
+                  {log.map((l, i) => (
+                    <div key={i} style={{ color:
+                      l.type==="success" ? "var(--green)" :
+                      l.type==="error"   ? "var(--red)" :
+                      "var(--text-muted)", marginBottom: 2 }}>{l.msg}</div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
 
-          {/* ── MIDDLE: Results ── */}
+          {/* MAIN: Results */}
           <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
             {/* Filter bar */}
-            <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 16px",
-              borderBottom: "1px solid var(--border)", flexShrink: 0,
-              background: "rgba(0,0,0,0.2)" }}>
-              <span style={{ fontSize: 10, color: "var(--text-dim)", fontFamily: "var(--ui)", letterSpacing: 1 }}>FILTER:</span>
+            <div style={{ padding: "10px 16px", borderBottom: "1px solid var(--border)",
+              display: "flex", alignItems: "center", gap: 8, flexShrink: 0,
+              background: "var(--bg)" }}>
+              <span style={{ fontSize: 12, color: "var(--text-muted)", fontWeight: 500, marginRight: 4 }}>Priority</span>
               {["All","High","Medium","Low"].map(f => (
-                <button key={f} onClick={() => setFilter(f)} style={{
-                  background: filter===f ? `${f==="All"?"var(--green)":PC[f]}18` : "transparent",
-                  color: filter===f ? (f==="All" ? "var(--green)" : PC[f]) : "var(--text-dim)",
-                  border: `1px solid ${filter===f ? (f==="All" ? "var(--green)" : PC[f]) : "var(--border)"}`,
-                  borderRadius: 2, padding: "3px 12px", fontSize: 10, cursor: "pointer",
-                  fontFamily: "var(--ui)", fontWeight: 700, letterSpacing: 2,
-                  boxShadow: filter===f && f!=="All" ? `0 0 6px ${PC[f]}44` : "none"
-                }}>{f==="All"?"ALL":f.toUpperCase()}</button>
+                <FilterPill key={f} label={f} active={filter===f}
+                  color={f==="All" ? null : PRIORITY_COLOR[f]}
+                  onClick={() => setFilter(f)} />
               ))}
-              <span style={{ marginLeft: "auto", fontSize: 10, color: "var(--text-dim)",
-                fontFamily: "var(--mono)" }}>{filtered.length} RECORDS</span>
+              <span style={{ marginLeft: "auto", fontSize: 12, color: "var(--text-muted)" }}>
+                {filtered.length} result{filtered.length!==1?"s":""}
+              </span>
             </div>
 
-            {/* Lead list */}
-            <div style={{ flex: 1, overflowY: "auto", padding: "12px 16px" }}>
+            <div style={{ flex: 1, overflowY: "auto", padding: "16px" }}>
               {leads.length === 0 && !scanning && (
-                <div style={{ textAlign: "center", marginTop: 80 }}>
-                  <div style={{ fontSize: 48, marginBottom: 12, opacity: 0.1 }}>◈</div>
-                  <div style={{ fontSize: 11, color: "var(--text-faint)", letterSpacing: 2 }}>
-                    NO DATA // INITIATE SCAN TO POPULATE
-                  </div>
+                <div style={{ textAlign: "center", marginTop: 100 }}>
+                  <div style={{ fontSize: 40, marginBottom: 12 }}>🗺️</div>
+                  <div style={{ fontSize: 14, color: "var(--text-muted)", fontWeight: 500 }}>No results yet</div>
+                  <div style={{ fontSize: 12, color: "var(--text-faint)", marginTop: 6 }}>Enter a zip code and hit Run Scan to find WordPress prospects</div>
                 </div>
               )}
               {scanning && leads.length === 0 && (
-                <div style={{ textAlign: "center", marginTop: 80 }}>
-                  <div style={{ fontSize: 11, color: "var(--text-dim)", letterSpacing: 2 }}
-                    className="cursor">SCANNING AREA</div>
+                <div style={{ textAlign: "center", marginTop: 100 }}>
+                  <div style={{ fontSize: 13, color: "var(--text-muted)" }}>
+                    <span className="spin" style={{ display: "inline-block", marginRight: 8 }}>⟳</span>
+                    Scanning area...
+                  </div>
+                  <div style={{ fontSize: 11, color: "var(--text-faint)", marginTop: 8 }}>Results will appear as they're found</div>
                 </div>
               )}
-              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {filtered.map(lead => (
                   <LeadCard key={lead.id} lead={lead}
-                    selected={selectedLead?.id === lead.id}
+                    selected={selectedLead?.id===lead.id}
                     status={statuses[lead.id] || lead.status}
                     onClick={() => generateOutreach(lead)}
                     onStatus={s => updateStatus(lead, s)} />
@@ -485,48 +474,55 @@
             </div>
           </div>
 
-          {/* ── RIGHT: Email panel ── */}
-          <div style={{ width: 320, borderLeft: "1px solid var(--border)", padding: "16px",
-            display: "flex", flexDirection: "column", background: "rgba(0,0,0,0.3)",
-            flexShrink: 0, overflow: "hidden" }}>
-            <Label>Outreach Generator</Label>
-            {!selectedLead && (
-              <div style={{ color: "var(--text-faint)", fontSize: 10, marginTop: 40,
-                textAlign: "center", letterSpacing: 2 }}>SELECT TARGET TO GENERATE</div>
-            )}
-            {selectedLead && (
-              <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 10, minHeight: 0 }}>
-                <div style={{ background: "var(--green-faint)", border: "1px solid var(--border2)",
-                  borderRadius: 3, padding: "10px 12px" }}>
-                  <div style={{ fontFamily: "var(--ui)", fontWeight: 700, fontSize: 14,
-                    color: "var(--green)", letterSpacing: 1 }}>{selectedLead.name}</div>
-                  <div style={{ fontSize: 10, color: "var(--text-dim)", marginTop: 2 }}>{selectedLead.domain}</div>
+          {/* RIGHT: Email */}
+          <div style={{ width: 340, borderLeft: "1px solid var(--border)",
+            display: "flex", flexDirection: "column", flexShrink: 0,
+            background: "var(--bg-card)", overflow: "hidden" }}>
+            <div style={{ padding: "14px 16px", borderBottom: "1px solid var(--border)" }}>
+              <div style={{ fontWeight: 600, fontSize: 13 }}>Outreach Email</div>
+              <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>AI-generated cold email</div>
+            </div>
+            <div style={{ flex: 1, padding: "16px", display: "flex", flexDirection: "column", gap: 12, overflow: "hidden" }}>
+              {!selectedLead && (
+                <div style={{ textAlign: "center", marginTop: 60 }}>
+                  <div style={{ fontSize: 28, marginBottom: 10 }}>✉️</div>
+                  <div style={{ fontSize: 13, color: "var(--text-muted)", fontWeight: 500 }}>Select a prospect</div>
+                  <div style={{ fontSize: 11, color: "var(--text-faint)", marginTop: 4 }}>Click any lead card to generate a personalized outreach email</div>
                 </div>
-                {generating && (
-                  <div style={{ color: "var(--cyan)", fontSize: 10, letterSpacing: 2 }}
-                    className="cursor">GENERATING</div>
-                )}
-                {outreach && !generating && (
-                  <>
-                    <textarea value={outreach} onChange={e => setOutreach(e.target.value)}
-                      style={{ flex: 1, background: "var(--bg)", border: "1px solid var(--border2)",
-                        color: "var(--text)", borderRadius: 3, padding: "10px 12px",
-                        fontSize: 11, lineHeight: 1.8, fontFamily: "var(--mono)",
-                        resize: "none", outline: "none", minHeight: 200 }} />
-                    <div style={{ display: "flex", gap: 6 }}>
-                      <GlowBtn onClick={() => navigator.clipboard.writeText(outreach)}
-                        style={{ flex: 1, padding: "8px 0", fontSize: 10, letterSpacing: 2 }}>
-                        ⎘ COPY
-                      </GlowBtn>
-                      <GlowBtn onClick={() => updateStatus(selectedLead, "contacted")}
-                        variant="secondary" style={{ flex: 1, padding: "8px 0", fontSize: 10, letterSpacing: 2 }}>
-                        ✓ SENT
-                      </GlowBtn>
+              )}
+              {selectedLead && (
+                <>
+                  <div style={{ background: "var(--bg)", border: "1px solid var(--border)",
+                    borderRadius: var(--radius-sm), padding: "12px" }}>
+                    <div style={{ fontWeight: 600, fontSize: 14 }}>{selectedLead.name}</div>
+                    <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>{selectedLead.domain}</div>
+                  </div>
+                  {generating && (
+                    <div style={{ textAlign: "center", padding: "20px 0", color: "var(--text-muted)", fontSize: 13 }}>
+                      <span className="spin" style={{ display: "inline-block", marginRight: 8 }}>⟳</span>
+                      Generating email...
                     </div>
-                  </>
-                )}
-              </div>
-            )}
+                  )}
+                  {outreach && !generating && (
+                    <>
+                      <textarea value={outreach} onChange={e => setOutreach(e.target.value)}
+                        style={{ flex: 1, background: "var(--bg-input)",
+                          border: "1px solid var(--border)", color: "var(--text)",
+                          borderRadius: var(--radius-sm), padding: "12px",
+                          fontSize: 12, lineHeight: 1.7, fontFamily: "Inter,sans-serif",
+                          resize: "none", outline: "none", minHeight: 260 }} />
+                      <div style={{ display: "flex", gap: 8 }}>
+                        <GhostBtn onClick={() => navigator.clipboard.writeText(outreach)}
+                          style={{ flex: 1, fontSize: 13 }}>Copy Email</GhostBtn>
+                        <PrimaryBtn onClick={() => {}}
+                          style={{ flex: 1, padding: "9px", fontSize: 13, background: "var(--green)",
+                            opacity: 1 }}>✓ Mark Sent</PrimaryBtn>
+                      </div>
+                    </>
+                  )}
+                </>
+              )}
+            </div>
           </div>
         </div>
       );
@@ -544,106 +540,96 @@
       const [notes, setNotes]         = useState("");
       const [editingNotes, setEditingNotes] = useState(false);
 
-      useEffect(() => { loadProspects(); }, []);
+      useEffect(() => { load(); }, []);
 
-      async function loadProspects() {
+      async function load() {
         setLoading(true);
-        try {
-          const res = await fetch(`${API_BASE}/prospects`);
-          const data = await res.json();
-          setProspects(data.prospects || []);
-        } catch(e) {}
+        try { const r = await fetch(`${API_BASE}/prospects`); const d = await r.json(); setProspects(d.prospects||[]); }
+        catch(e){}
         setLoading(false);
       }
 
       async function updateStatus(id, status) {
         await fetch(`${API_BASE}/prospects/${id}`, {
-          method: "PATCH", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ status })
+          method:"PATCH", headers:{"Content-Type":"application/json"},
+          body: JSON.stringify({status})
         });
-        setProspects(prev => prev.map(p => p.id===id ? {...p,status} : p));
-        if (selected?.id===id) setSelected(p => ({...p,status}));
+        setProspects(prev => prev.map(p => p.id===id?{...p,status}:p));
+        if (selected?.id===id) setSelected(s => ({...s,status}));
       }
 
       async function saveNotes(id) {
         await fetch(`${API_BASE}/prospects/${id}`, {
-          method: "PATCH", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ notes })
+          method:"PATCH", headers:{"Content-Type":"application/json"},
+          body: JSON.stringify({notes})
         });
-        setProspects(prev => prev.map(p => p.id===id ? {...p,notes} : p));
+        setProspects(prev => prev.map(p => p.id===id?{...p,notes}:p));
         setEditingNotes(false);
       }
 
-      async function generateOutreach(lead) {
-        setOutreach(""); setGenerating(true);
+      async function selectLead(lead) {
+        setSelected(lead); setOutreach(""); setNotes(lead.notes||""); setEditingNotes(false);
+        setGenerating(true);
         try {
-          const res = await fetch(`${API_BASE}/generate-email`, {
-            method: "POST", headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ lead })
+          const r = await fetch(`${API_BASE}/generate-email`, {
+            method:"POST", headers:{"Content-Type":"application/json"},
+            body: JSON.stringify({lead})
           });
-          const data = await res.json();
-          setOutreach(data.email || "ERROR.");
-        } catch(e) { setOutreach("ERROR: Backend unreachable."); }
+          const d = await r.json();
+          setOutreach(d.email||"Could not generate.");
+        } catch(e) { setOutreach("Error: backend unreachable."); }
         setGenerating(false);
       }
 
-      function selectLead(lead) {
-        setSelected(lead); setOutreach(""); setNotes(lead.notes||""); setEditingNotes(false);
-        generateOutreach(lead);
-      }
-
-      const statusCounts = { new:0, contacted:0, won:0, lost:0 };
-      prospects.forEach(p => { if (statusCounts[p.status]!==undefined) statusCounts[p.status]++; });
-
+      const counts = { new:0, contacted:0, won:0, lost:0 };
+      prospects.forEach(p => { if(counts[p.status]!==undefined) counts[p.status]++; });
       let filtered = prospects;
-      if (filter !== "All") filtered = filtered.filter(p => p.priority === filter);
-      if (statusFilter !== "All") filtered = filtered.filter(p => p.status === statusFilter);
+      if (filter!=="All") filtered = filtered.filter(p=>p.priority===filter);
+      if (statusFilter!=="All") filtered = filtered.filter(p=>p.status===statusFilter);
 
       return (
-        <div style={{ display: "flex", height: "100%", overflow: "hidden" }}>
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+        <div style={{ display:"flex", height:"100%", overflow:"hidden" }}>
+          <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }}>
 
-            {/* Status bar */}
-            <div style={{ display: "flex", borderBottom: "1px solid var(--border)", flexShrink: 0 }}>
-              {Object.entries(statusCounts).map(([s, c]) => (
-                <div key={s} onClick={() => setStatusFilter(statusFilter===s?"All":s)}
-                  style={{ flex:1, padding:"12px 0", textAlign:"center", cursor:"pointer",
-                    borderRight:"1px solid var(--border)",
-                    background: statusFilter===s ? `${SC[s]}08` : "transparent",
-                    transition: "background 0.15s" }}>
-                  <div style={{ fontSize:20, fontWeight:700, color:SC[s], fontFamily:"var(--ui)",
-                    textShadow: `0 0 8px ${SC[s]}` }}>{c}</div>
-                  <div style={{ fontSize:9, color:"var(--text-dim)", fontFamily:"var(--ui)",
-                    letterSpacing:2, fontWeight:700 }}>{s.toUpperCase()}</div>
-                </div>
+            {/* Status row */}
+            <div style={{ display:"flex", borderBottom:"1px solid var(--border)", flexShrink:0 }}>
+              {Object.entries(counts).map(([s,c]) => (
+                <button key={s} onClick={() => setStatusFilter(statusFilter===s?"All":s)} style={{
+                  flex:1, padding:"14px 0", background: statusFilter===s?`${STATUS_COLOR[s]}08`:"transparent",
+                  border:"none", borderRight:"1px solid var(--border)", cursor:"pointer",
+                  borderBottom: statusFilter===s ? `2px solid ${STATUS_COLOR[s]}` : "2px solid transparent",
+                  transition:"all 0.15s"
+                }}>
+                  <div style={{ fontSize:22, fontWeight:700, color:STATUS_COLOR[s], lineHeight:1 }}>{c}</div>
+                  <div style={{ fontSize:11, color:"var(--text-muted)", marginTop:3, fontWeight:500, textTransform:"capitalize" }}>{s}</div>
+                </button>
               ))}
-              <button onClick={loadProspects} style={{ padding:"0 20px", background:"none",
-                border:"none", color:"var(--text-dim)", cursor:"pointer", fontSize:14,
-                fontFamily:"var(--mono)" }}>↻</button>
+              <button onClick={load} style={{ padding:"0 20px", background:"none",
+                border:"none", borderLeft:"1px solid var(--border)", color:"var(--text-muted)",
+                cursor:"pointer", fontSize:18, transition:"color 0.15s" }}
+                onMouseEnter={e=>e.currentTarget.style.color="var(--text)"}
+                onMouseLeave={e=>e.currentTarget.style.color="var(--text-muted)"}>↻</button>
             </div>
 
-            {/* Filter */}
-            <div style={{ display:"flex", gap:8, padding:"8px 16px", borderBottom:"1px solid var(--border)",
-              flexShrink:0, alignItems:"center" }}>
-              <span style={{ fontSize:10, color:"var(--text-dim)", fontFamily:"var(--ui)", letterSpacing:1 }}>PRIORITY:</span>
+            {/* Filters */}
+            <div style={{ padding:"10px 16px", borderBottom:"1px solid var(--border)",
+              display:"flex", gap:8, alignItems:"center", flexShrink:0, background:"var(--bg)" }}>
+              <span style={{ fontSize:12, color:"var(--text-muted)", fontWeight:500 }}>Priority</span>
               {["All","High","Medium","Low"].map(f => (
-                <button key={f} onClick={() => setFilter(f)} style={{
-                  background: filter===f ? `${f==="All"?"var(--green)":PC[f]}18` : "transparent",
-                  color: filter===f ? (f==="All"?"var(--green)":PC[f]) : "var(--text-dim)",
-                  border:`1px solid ${filter===f?(f==="All"?"var(--green)":PC[f]):"var(--border)"}`,
-                  borderRadius:2, padding:"2px 10px", fontSize:10, cursor:"pointer",
-                  fontFamily:"var(--ui)", fontWeight:700, letterSpacing:2
-                }}>{f==="All"?"ALL":f.toUpperCase()}</button>
+                <FilterPill key={f} label={f} active={filter===f}
+                  color={f==="All"?null:PRIORITY_COLOR[f]} onClick={() => setFilter(f)} />
               ))}
-              <span style={{ marginLeft:"auto", fontSize:10, color:"var(--text-dim)", fontFamily:"var(--mono)" }}>
-                {filtered.length} RECORDS
+              <span style={{ marginLeft:"auto", fontSize:12, color:"var(--text-muted)" }}>
+                {filtered.length} result{filtered.length!==1?"s":""}
               </span>
             </div>
 
-            <div style={{ flex:1, overflowY:"auto", padding:"12px 16px" }}>
-              {loading && <div style={{ color:"var(--text-dim)", fontSize:11, letterSpacing:2 }} className="cursor">LOADING</div>}
-              {!loading && filtered.length===0 && <div style={{ color:"var(--text-faint)", fontSize:10, letterSpacing:2, textAlign:"center", marginTop:40 }}>NO RECORDS FOUND</div>}
-              <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+            <div style={{ flex:1, overflowY:"auto", padding:"16px" }}>
+              {loading && <div style={{ color:"var(--text-muted)", fontSize:13 }}>Loading...</div>}
+              {!loading && filtered.length===0 && (
+                <div style={{ textAlign:"center", marginTop:60, color:"var(--text-muted)", fontSize:13 }}>No prospects found. Run a scan first!</div>
+              )}
+              <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
                 {filtered.map(lead => (
                   <LeadCard key={lead.id} lead={lead} selected={selected?.id===lead.id}
                     status={lead.status} onClick={() => selectLead(lead)}
@@ -653,85 +639,112 @@
             </div>
           </div>
 
-          {/* Detail panel */}
-          <div style={{ width:340, borderLeft:"1px solid var(--border)", padding:"16px",
-            display:"flex", flexDirection:"column", background:"rgba(0,0,0,0.3)",
-            overflow:"hidden", gap:12 }}>
-            {!selected && <div style={{ color:"var(--text-faint)", fontSize:10, letterSpacing:2, marginTop:40, textAlign:"center" }}>SELECT RECORD</div>}
-            {selected && (<>
-              <div style={{ background:"var(--green-faint)", border:"1px solid var(--border2)", borderRadius:3, padding:"12px" }}>
-                <div style={{ fontFamily:"var(--ui)", fontWeight:700, fontSize:16, color:"var(--green)" }}>{selected.name}</div>
-                <a href={selected.website} target="_blank" style={{ fontSize:10, color:"var(--cyan)", textDecoration:"none" }}>{selected.website}</a>
-                {selected.phone && <div style={{ fontSize:10, color:"var(--text-dim)", marginTop:4 }}>☎ {selected.phone}</div>}
-              </div>
-
-              {selected.screenshot && (
-                <div style={{ borderRadius:3, overflow:"hidden", border:"1px solid var(--border2)" }}>
-                  <div style={{ fontSize:9, color:"var(--text-dim)", padding:"4px 8px", background:"var(--bg2)", letterSpacing:2 }}>SITE PREVIEW</div>
-                  <img src={selected.screenshot} style={{ width:"100%", maxHeight:160, objectFit:"cover", objectPosition:"top", display:"block" }} />
-                </div>
+          {/* Detail pane */}
+          <div style={{ width:360, borderLeft:"1px solid var(--border)", background:"var(--bg-card)",
+            display:"flex", flexDirection:"column", overflow:"hidden" }}>
+            <div style={{ padding:"14px 16px", borderBottom:"1px solid var(--border)" }}>
+              <div style={{ fontWeight:600, fontSize:13 }}>Prospect Details</div>
+            </div>
+            <div style={{ flex:1, overflowY:"auto", padding:"16px", display:"flex", flexDirection:"column", gap:16 }}>
+              {!selected && (
+                <div style={{ textAlign:"center", marginTop:60, color:"var(--text-muted)", fontSize:13 }}>Select a prospect to view details</div>
               )}
-
-              <div style={{ display:"flex", gap:4, flexWrap:"wrap" }}>
-                {["new","contacted","won","lost"].map(s => (
-                  <button key={s} onClick={() => updateStatus(selected.id, s)} style={{
-                    background: selected.status===s ? `${SC[s]}20` : "transparent",
-                    color:SC[s], border:`1px solid ${SC[s]}44`,
-                    borderRadius:2, padding:"3px 10px", fontSize:9, cursor:"pointer",
-                    fontFamily:"var(--ui)", fontWeight:700, letterSpacing:2,
-                    boxShadow: selected.status===s ? `0 0 6px ${SC[s]}44` : "none"
-                  }}>{s.toUpperCase()}</button>
-                ))}
-              </div>
-
-              <div>
-                <Label>Issues Detected</Label>
-                {(selected.issues||[]).map(iss => (
-                  <div key={iss} style={{ fontSize:10, color:"var(--yellow)", marginBottom:3 }}>⚠ {iss}</div>
-                ))}
-              </div>
-
-              <div style={{ flex:1, display:"flex", flexDirection:"column", minHeight:0 }}>
-                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:6 }}>
-                  <Label style={{ marginBottom:0 }}>Notes</Label>
-                  <button onClick={() => setEditingNotes(!editingNotes)} style={{ background:"none", border:"none",
-                    color:"var(--cyan)", fontSize:9, cursor:"pointer", fontFamily:"var(--mono)", letterSpacing:1 }}>
-                    {editingNotes?"CANCEL":"EDIT"}
-                  </button>
+              {selected && (<>
+                <div>
+                  <div style={{ fontWeight:700, fontSize:16 }}>{selected.name}</div>
+                  <a href={selected.website} target="_blank" style={{ fontSize:12, color:"var(--accent)", textDecoration:"none" }}>{selected.website}</a>
+                  {selected.phone && <div style={{ fontSize:12, color:"var(--text-muted)", marginTop:4 }}>📞 {selected.phone}</div>}
+                  {selected.address && <div style={{ fontSize:11, color:"var(--text-faint)", marginTop:2 }}>{selected.address}</div>}
                 </div>
-                {editingNotes ? (
-                  <>
-                    <textarea value={notes} onChange={e => setNotes(e.target.value)}
-                      style={{ background:"var(--bg)", border:"1px solid var(--border2)", color:"var(--text)",
-                        borderRadius:3, padding:"8px", fontSize:10, lineHeight:1.7,
-                        fontFamily:"var(--mono)", resize:"none", outline:"none", height:80 }} />
-                    <GlowBtn onClick={() => saveNotes(selected.id)} style={{ marginTop:6, padding:"6px", fontSize:10 }}>SAVE</GlowBtn>
-                  </>
-                ) : (
-                  <div style={{ fontSize:10, color:selected.notes?"var(--text)":"var(--text-faint)",
-                    fontStyle:selected.notes?"normal":"italic", lineHeight:1.7 }}>
-                    {selected.notes||"// no notes"}
+
+                {/* Status buttons */}
+                <div>
+                  <SectionLabel>Status</SectionLabel>
+                  <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
+                    {["new","contacted","won","lost"].map(s => (
+                      <button key={s} onClick={() => updateStatus(selected.id, s)} style={{
+                        background: selected.status===s ? STATUS_BG[s] : "transparent",
+                        color: STATUS_COLOR[s],
+                        border:`1px solid ${selected.status===s ? STATUS_COLOR[s]+"55" : "var(--border)"}`,
+                        borderRadius:20, padding:"4px 14px", fontSize:12, fontWeight:600,
+                        cursor:"pointer", textTransform:"capitalize", transition:"all 0.15s"
+                      }}>{s}</button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Screenshot */}
+                {selected.screenshot && (
+                  <div style={{ borderRadius:var(--radius-sm), overflow:"hidden", border:"1px solid var(--border)" }}>
+                    <div style={{ fontSize:11, color:"var(--text-muted)", padding:"6px 10px",
+                      background:"var(--bg)", borderBottom:"1px solid var(--border)", fontWeight:500 }}>
+                      Site Preview
+                    </div>
+                    <img src={selected.screenshot} style={{ width:"100%", maxHeight:170,
+                      objectFit:"cover", objectPosition:"top", display:"block" }} />
                   </div>
                 )}
-              </div>
 
-              <div style={{ borderTop:"1px solid var(--border)", paddingTop:12 }}>
-                <Label>Outreach Email</Label>
-                {generating && <div style={{ color:"var(--cyan)", fontSize:10, letterSpacing:2 }} className="cursor">GENERATING</div>}
-                {outreach && !generating && (
-                  <>
-                    <textarea value={outreach} onChange={e => setOutreach(e.target.value)}
-                      style={{ width:"100%", background:"var(--bg)", border:"1px solid var(--border)",
-                        color:"var(--text)", borderRadius:3, padding:"8px", fontSize:10, lineHeight:1.7,
-                        fontFamily:"var(--mono)", resize:"none", outline:"none", height:140 }} />
-                    <GlowBtn onClick={() => navigator.clipboard.writeText(outreach)}
-                      style={{ marginTop:6, padding:"7px", fontSize:10, letterSpacing:2, width:"100%" }}>
-                      ⎘ COPY EMAIL
-                    </GlowBtn>
-                  </>
-                )}
-              </div>
-            </>)}
+                {/* Issues */}
+                <div>
+                  <SectionLabel>Issues Detected</SectionLabel>
+                  <div style={{ display:"flex", flexDirection:"column", gap:5 }}>
+                    {(selected.issues||[]).map(iss => (
+                      <div key={iss} style={{ display:"flex", alignItems:"center", gap:8,
+                        background:"var(--yellow-bg)", border:"1px solid var(--yellow)22",
+                        borderRadius:var(--radius-sm), padding:"6px 10px", fontSize:12, color:"var(--yellow)" }}>
+                        ⚠ {iss}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Notes */}
+                <div>
+                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
+                    <SectionLabel style={{ marginBottom:0 }}>Notes</SectionLabel>
+                    <button onClick={() => setEditingNotes(!editingNotes)} style={{
+                      background:"none", border:"none", color:"var(--accent)", fontSize:12,
+                      cursor:"pointer", fontWeight:500 }}>{editingNotes?"Cancel":"Edit"}</button>
+                  </div>
+                  {editingNotes ? (
+                    <>
+                      <textarea value={notes} onChange={e=>setNotes(e.target.value)}
+                        style={{ width:"100%", background:"var(--bg-input)", border:"1px solid var(--border)",
+                          color:"var(--text)", borderRadius:var(--radius-sm), padding:"10px",
+                          fontSize:12, lineHeight:1.7, fontFamily:"Inter,sans-serif",
+                          resize:"none", outline:"none", height:90 }} />
+                      <PrimaryBtn onClick={() => saveNotes(selected.id)}
+                        style={{ marginTop:8, padding:"8px" }}>Save Notes</PrimaryBtn>
+                    </>
+                  ) : (
+                    <div style={{ fontSize:12, color:selected.notes?"var(--text)":"var(--text-faint)",
+                      fontStyle:selected.notes?"normal":"italic", lineHeight:1.7 }}>
+                      {selected.notes||"No notes yet. Click Edit to add notes."}
+                    </div>
+                  )}
+                </div>
+
+                {/* Email */}
+                <div>
+                  <SectionLabel>Outreach Email</SectionLabel>
+                  {generating && <div style={{ color:"var(--text-muted)", fontSize:12 }}>
+                    <span className="spin" style={{ display:"inline-block", marginRight:6 }}>⟳</span>Generating...
+                  </div>}
+                  {outreach && !generating && (
+                    <>
+                      <textarea value={outreach} onChange={e=>setOutreach(e.target.value)}
+                        style={{ width:"100%", background:"var(--bg-input)", border:"1px solid var(--border)",
+                          color:"var(--text)", borderRadius:var(--radius-sm), padding:"10px",
+                          fontSize:11.5, lineHeight:1.75, fontFamily:"Inter,sans-serif",
+                          resize:"none", outline:"none", height:160 }} />
+                      <GhostBtn onClick={() => navigator.clipboard.writeText(outreach)}
+                        style={{ marginTop:8, width:"100%", fontSize:13 }}>Copy Email</GhostBtn>
+                    </>
+                  )}
+                </div>
+              </>)}
+            </div>
           </div>
         </div>
       );
@@ -744,61 +757,91 @@
 
       useEffect(() => {
         (async () => {
-          try {
-            const res = await fetch(`${API_BASE}/scans`);
-            const data = await res.json();
-            setScans(data.scans || []);
-          } catch(e){}
+          try { const r = await fetch(`${API_BASE}/scans`); const d = await r.json(); setScans(d.scans||[]); }
+          catch(e){}
           setLoading(false);
         })();
       }, []);
 
+      const totalFound   = scans.reduce((a,s) => a+s.found, 0);
+      const totalScanned = scans.reduce((a,s) => a+s.scanned, 0);
+      const avgHitRate   = totalScanned > 0 ? Math.round((totalFound/totalScanned)*100) : 0;
+
       return (
-        <div style={{ padding:"24px 32px", maxWidth:800, overflowY:"auto", height:"100%" }}>
-          <Label style={{ fontSize:11, marginBottom:20 }}>Scan History // {scans.length} Records</Label>
-          {loading && <div style={{ color:"var(--text-dim)", fontSize:11, letterSpacing:2 }} className="cursor">LOADING</div>}
-          {!loading && scans.length===0 && <div style={{ color:"var(--text-faint)", fontSize:10, letterSpacing:2 }}>NO SCAN RECORDS FOUND</div>}
-          <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
-            {scans.map((scan, i) => (
-              <div key={scan.id} className="bracket" style={{
-                background:"var(--bg2)", border:"1px solid var(--border)",
-                borderRadius:3, padding:"14px 18px",
-                display:"flex", alignItems:"center", gap:24,
-                transition:"border-color 0.15s"
-              }}>
-                <div style={{ width:28, fontFamily:"var(--mono)", fontSize:10,
-                  color:"var(--text-faint)" }}>#{String(i+1).padStart(2,"0")}</div>
-                <div style={{ flex:1 }}>
-                  <div style={{ fontFamily:"var(--ui)", fontWeight:700, fontSize:14,
-                    color:"var(--green)", letterSpacing:1 }}>
-                    ZIP {scan.zip} // {scan.radius}MI RADIUS
-                  </div>
-                  <div style={{ fontSize:10, color:"var(--text-dim)", marginTop:2, fontFamily:"var(--mono)" }}>
-                    {scan.created_at}
-                  </div>
+        <div style={{ padding:"24px", overflowY:"auto", height:"100%" }}>
+          <div style={{ maxWidth:860 }}>
+            <div style={{ marginBottom:20 }}>
+              <div style={{ fontWeight:700, fontSize:18 }}>Scan History</div>
+              <div style={{ fontSize:12, color:"var(--text-muted)", marginTop:2 }}>{scans.length} scans completed</div>
+            </div>
+
+            {/* Summary stats */}
+            {scans.length > 0 && (
+              <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:12, marginBottom:20 }}>
+                <div style={{ background:"var(--bg-card)", border:"1px solid var(--border)", borderRadius:var(--radius), padding:"16px 20px" }}>
+                  <div style={{ fontSize:28, fontWeight:700, color:"var(--accent)" }}>{scans.length}</div>
+                  <div style={{ fontSize:12, color:"var(--text-muted)", marginTop:4 }}>Total scans</div>
                 </div>
-                <div style={{ textAlign:"center" }}>
-                  <div style={{ fontSize:24, fontWeight:700, color:"var(--green)",
-                    fontFamily:"var(--ui)", textShadow:"0 0 10px var(--green)" }}>{scan.found}</div>
-                  <div style={{ fontSize:9, color:"var(--text-dim)", fontFamily:"var(--ui)",
-                    letterSpacing:2, fontWeight:700 }}>WP FOUND</div>
+                <div style={{ background:"var(--bg-card)", border:"1px solid var(--border)", borderRadius:var(--radius), padding:"16px 20px" }}>
+                  <div style={{ fontSize:28, fontWeight:700, color:"var(--green)" }}>{totalFound}</div>
+                  <div style={{ fontSize:12, color:"var(--text-muted)", marginTop:4 }}>WordPress sites found</div>
                 </div>
-                <div style={{ textAlign:"center" }}>
-                  <div style={{ fontSize:24, fontWeight:700, color:"var(--text-dim)",
-                    fontFamily:"var(--ui)" }}>{scan.scanned}</div>
-                  <div style={{ fontSize:9, color:"var(--text-faint)", fontFamily:"var(--ui)",
-                    letterSpacing:2, fontWeight:700 }}>SCANNED</div>
-                </div>
-                <div style={{ textAlign:"center" }}>
-                  <div style={{ fontSize:14, fontWeight:700, fontFamily:"var(--ui)",
-                    color: scan.found/scan.scanned > 0.3 ? "var(--green)" : "var(--yellow)" }}>
-                    {scan.scanned > 0 ? Math.round((scan.found/scan.scanned)*100) : 0}%
-                  </div>
-                  <div style={{ fontSize:9, color:"var(--text-faint)", fontFamily:"var(--ui)",
-                    letterSpacing:2, fontWeight:700 }}>HIT RATE</div>
+                <div style={{ background:"var(--bg-card)", border:"1px solid var(--border)", borderRadius:var(--radius), padding:"16px 20px" }}>
+                  <div style={{ fontSize:28, fontWeight:700, color:"var(--yellow)" }}>{avgHitRate}%</div>
+                  <div style={{ fontSize:12, color:"var(--text-muted)", marginTop:4 }}>Avg hit rate</div>
                 </div>
               </div>
-            ))}
+            )}
+
+            {loading && <div style={{ color:"var(--text-muted)", fontSize:13 }}>Loading...</div>}
+            {!loading && scans.length===0 && (
+              <div style={{ textAlign:"center", marginTop:60, color:"var(--text-muted)" }}>
+                <div style={{ fontSize:32, marginBottom:10 }}>📭</div>
+                <div style={{ fontSize:14, fontWeight:500 }}>No scan history yet</div>
+                <div style={{ fontSize:12, marginTop:4 }}>Run your first scan to see results here</div>
+              </div>
+            )}
+
+            <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+              {scans.map((scan, i) => {
+                const hitRate = scan.scanned > 0 ? Math.round((scan.found/scan.scanned)*100) : 0;
+                return (
+                  <div key={scan.id} style={{ background:"var(--bg-card)", border:"1px solid var(--border)",
+                    borderRadius:var(--radius), padding:"16px 20px",
+                    display:"flex", alignItems:"center", gap:20 }}>
+                    <div style={{ width:32, height:32, background:"var(--accent-bg)",
+                      border:"1px solid var(--accent)33", borderRadius:var(--radius-sm),
+                      display:"flex", alignItems:"center", justifyContent:"center",
+                      fontSize:11, fontWeight:700, color:"var(--accent)", flexShrink:0 }}>
+                      #{i+1}
+                    </div>
+                    <div style={{ flex:1 }}>
+                      <div style={{ fontWeight:600, fontSize:14 }}>
+                        Zip {scan.zip} — {scan.radius} mile radius
+                      </div>
+                      <div style={{ fontSize:11, color:"var(--text-muted)", marginTop:2 }}>{scan.created_at}</div>
+                    </div>
+                    <div style={{ display:"flex", gap:16, alignItems:"center" }}>
+                      <div style={{ textAlign:"center" }}>
+                        <div style={{ fontSize:20, fontWeight:700, color:"var(--green)" }}>{scan.found}</div>
+                        <div style={{ fontSize:10, color:"var(--text-muted)", fontWeight:500 }}>Found</div>
+                      </div>
+                      <div style={{ textAlign:"center" }}>
+                        <div style={{ fontSize:20, fontWeight:700, color:"var(--text-muted)" }}>{scan.scanned}</div>
+                        <div style={{ fontSize:10, color:"var(--text-faint)", fontWeight:500 }}>Scanned</div>
+                      </div>
+                      <div style={{ textAlign:"center", minWidth:48 }}>
+                        <div style={{ fontSize:20, fontWeight:700,
+                          color: hitRate > 30 ? "var(--green)" : hitRate > 15 ? "var(--yellow)" : "var(--text-muted)" }}>
+                          {hitRate}%
+                        </div>
+                        <div style={{ fontSize:10, color:"var(--text-faint)", fontWeight:500 }}>Hit rate</div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
       );
@@ -808,70 +851,63 @@
     function LeadCard({ lead, selected, status, onClick }) {
       const [imgError, setImgError] = useState(false);
       const [hover, setHover]       = useState(false);
-      const color = PC[lead.priority];
+      const pc = PRIORITY_COLOR[lead.priority];
+      const sc = STATUS_COLOR[status];
 
       return (
         <div onClick={onClick} className="fade-in"
           onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
           style={{
-            display:"flex", overflow:"hidden", borderRadius:3, cursor:"pointer",
-            border:`1px solid ${selected ? color : hover ? "var(--border2)" : "var(--border)"}`,
-            background: selected ? `${color}08` : hover ? "var(--green-faint)" : "var(--bg2)",
-            boxShadow: selected ? `0 0 12px ${color}22` : "none",
-            transition:"all 0.15s"
+            display:"flex", overflow:"hidden", borderRadius:var(--radius),
+            border:`1px solid ${selected ? "var(--accent)" : hover ? "#3a4560" : "var(--border)"}`,
+            background: selected ? "var(--accent-bg)" : hover ? "var(--bg-hover)" : "var(--bg-card)",
+            cursor:"pointer", transition:"all 0.15s",
+            boxShadow: selected ? "0 0 0 1px var(--accent)55" : "var(--shadow)"
           }}>
 
-          {/* Priority bar */}
-          <div style={{ width:3, background:color, flexShrink:0,
-            boxShadow:`0 0 8px ${color}` }} />
+          {/* Priority stripe */}
+          <div style={{ width:4, background:pc, flexShrink:0 }} />
 
           {/* Screenshot */}
           <div style={{ width:80, flexShrink:0, background:"var(--bg)",
-            borderRight:"1px solid var(--border)", overflow:"hidden",
-            display:"flex", alignItems:"center", justifyContent:"center",
-            minHeight:70 }}>
+            borderRight:`1px solid var(--border)`, overflow:"hidden",
+            display:"flex", alignItems:"center", justifyContent:"center", minHeight:72 }}>
             {lead.screenshot && !imgError ? (
               <img src={lead.screenshot} onError={() => setImgError(true)}
-                style={{ width:"100%", height:"100%", objectFit:"cover",
-                  objectPosition:"top", display:"block", opacity:0.85 }} />
+                style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"top", display:"block" }} />
             ) : (
-              <span style={{ fontSize:18, opacity:0.15 }}>◈</span>
+              <span style={{ fontSize:20, opacity:0.2 }}>🌐</span>
             )}
           </div>
 
-          {/* Content */}
-          <div style={{ flex:1, padding:"10px 12px", minWidth:0 }}>
+          {/* Body */}
+          <div style={{ flex:1, padding:"10px 14px", minWidth:0 }}>
             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:8 }}>
               <div style={{ minWidth:0 }}>
-                <div style={{ fontFamily:"var(--ui)", fontWeight:700, fontSize:13,
-                  color:selected?"var(--green)":"var(--text)", letterSpacing:0.5,
-                  whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis",
-                  textShadow:selected?`0 0 8px var(--green)`:"none" }}>{lead.name}</div>
-                <div style={{ fontSize:10, color:"var(--text-dim)", fontFamily:"var(--mono)" }}>{lead.domain}</div>
+                <div style={{ fontWeight:600, fontSize:14, color:"var(--text)",
+                  whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{lead.name}</div>
+                <div style={{ fontSize:11, color:"var(--text-muted)", marginTop:1 }}>{lead.domain}</div>
               </div>
-              <div style={{ display:"flex", gap:4, flexShrink:0 }}>
-                <Badge label={lead.priority.toUpperCase()} color={color} />
-                <Badge label={status.toUpperCase()} color={SC[status]} />
+              <div style={{ display:"flex", gap:5, flexShrink:0 }}>
+                <Chip label={lead.priority} color={pc} bg={PRIORITY_BG[lead.priority]} />
+                <Chip label={status} color={sc} bg={STATUS_BG[status]} />
               </div>
             </div>
 
-            <div style={{ marginTop:6, display:"flex", gap:4, flexWrap:"wrap" }}>
+            <div style={{ display:"flex", gap:5, flexWrap:"wrap", marginTop:8 }}>
               {(lead.issues||[]).slice(0,2).map(iss => (
-                <span key={iss} style={{ background:"rgba(255,204,0,0.06)", border:"1px solid rgba(255,204,0,0.15)",
-                  borderRadius:2, padding:"1px 6px", fontSize:9, color:"var(--yellow)",
-                  fontFamily:"var(--mono)" }}>{iss}</span>
-              ))}
-              {(lead.issues||[]).length > 2 && (
-                <span style={{ fontSize:9, color:"var(--text-faint)", fontFamily:"var(--mono)" }}>
-                  +{lead.issues.length-2}
+                <span key={iss} style={{ background:"var(--yellow-bg)", border:"1px solid var(--yellow)22",
+                  borderRadius:4, padding:"2px 7px", fontSize:10.5, color:"var(--yellow)", fontWeight:500 }}>
+                  {iss}
                 </span>
-              )}
+              ))}
+              {(lead.issues||[]).length > 2 &&
+                <span style={{ fontSize:10.5, color:"var(--text-faint)" }}>+{lead.issues.length-2} more</span>}
             </div>
 
-            <div style={{ marginTop:5, display:"flex", gap:12, fontSize:9,
-              color:"var(--text-dim)", fontFamily:"var(--mono)" }}>
-              {lead.wpVersion && <span>WP:{lead.wpVersion}</span>}
-              <span style={{ color:color, textShadow:`0 0 4px ${color}` }}>SCORE:{lead.score}</span>
+            <div style={{ display:"flex", gap:14, marginTop:7, fontSize:11, color:"var(--text-faint)" }}>
+              {lead.wpVersion && <span>WP {lead.wpVersion}</span>}
+              <span style={{ color:pc, fontWeight:600 }}>Score: {lead.score}</span>
               {lead.phone && <span>{lead.phone}</span>}
             </div>
           </div>

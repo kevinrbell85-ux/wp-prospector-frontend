@@ -3,114 +3,91 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>WP Prospector // AUTH</title>
-  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@700&display=swap" rel="stylesheet" />
+  <title>WP Prospector — Sign In</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --green: #00ff88;
-      --green-dim: #00cc66;
-      --bg: #020c08;
-      --border: rgba(0,255,136,0.15);
-      --border2: rgba(0,255,136,0.3);
-      --text-dim: #3a7a58;
-      --mono: 'Share Tech Mono', monospace;
-      --ui: 'Rajdhani', sans-serif;
-    }
     body {
-      background: var(--bg);
-      background-image: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,136,0.012) 2px, rgba(0,255,136,0.012) 4px),
-        linear-gradient(rgba(0,255,136,0.02) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0,255,136,0.02) 1px, transparent 1px);
-      background-size: auto, 32px 32px, 32px 32px;
-      color: var(--green);
-      font-family: var(--mono);
+      background: #0e1117;
+      color: #e2e8f0;
+      font-family: 'Inter', sans-serif;
       display: flex; align-items: center; justify-content: center;
       min-height: 100vh;
+      background-image: radial-gradient(ellipse at 50% 0%, rgba(82,113,255,0.08) 0%, transparent 70%);
     }
     .card {
-      width: 360px;
-      border: 1px solid var(--border2);
-      background: rgba(0,0,0,0.6);
-      padding: 48px 36px;
-      position: relative;
+      width: 380px;
+      background: #161b27;
+      border: 1px solid #2a3142;
+      border-radius: 12px;
+      padding: 40px 36px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6);
     }
-    .card::before, .card::after,
-    .card .corner-br, .card .corner-bl {
-      content: '';
-      position: absolute;
-      width: 12px; height: 12px;
-      border-color: var(--green);
-      border-style: solid;
+    .logo {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 28px;
     }
-    .card::before  { top:-1px; left:-1px;  border-width: 2px 0 0 2px; }
-    .card::after   { top:-1px; right:-1px; border-width: 2px 2px 0 0; }
-    .card .corner-br { bottom:-1px; right:-1px; border-width: 0 2px 2px 0; }
-    .card .corner-bl { bottom:-1px; left:-1px;  border-width: 0 0 2px 2px; }
-
-    .logo-dot {
-      width: 8px; height: 8px; background: var(--green);
-      border-radius: 50%; box-shadow: 0 0 8px var(--green), 0 0 20px rgba(0,255,136,0.4);
-      display: inline-block; margin-right: 8px;
-      animation: pulse 2s infinite;
+    .logo-icon {
+      width: 36px; height: 36px; background: #5271ff;
+      border-radius: 9px; display: flex; align-items: center;
+      justify-content: center; font-size: 18px;
+      box-shadow: 0 0 20px rgba(82,113,255,0.3);
     }
-    @keyframes pulse {
-      0%,100% { box-shadow: 0 0 8px var(--green), 0 0 20px rgba(0,255,136,0.4); }
-      50% { box-shadow: 0 0 12px var(--green), 0 0 30px rgba(0,255,136,0.6); }
-    }
-    .title {
-      font-family: var(--ui); font-size: 22px; font-weight: 700;
-      letter-spacing: 4px; color: var(--green);
-      text-shadow: 0 0 10px var(--green), 0 0 20px rgba(0,255,136,0.4);
-      text-align: center; margin-bottom: 6px;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .subtitle {
-      font-size: 10px; color: var(--text-dim); letter-spacing: 3px;
-      text-align: center; margin-bottom: 36px;
-    }
+    .logo-text { font-weight: 700; font-size: 16px; }
+    .logo-sub  { font-size: 11px; color: #8892a4; margin-top: 1px; }
+    h1 { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+    .subtitle { font-size: 13px; color: #8892a4; margin-bottom: 28px; }
+    label { display: block; font-size: 12px; font-weight: 600; color: #8892a4; margin-bottom: 6px; letter-spacing: 0.3px; }
     input {
-      width: 100%; background: rgba(0,255,136,0.04);
-      border: 1px solid var(--border2);
-      color: var(--green); padding: 12px 16px; border-radius: 2px;
-      font-size: 18px; font-family: var(--mono);
-      outline: none; text-align: center; letter-spacing: 6px;
-      margin-bottom: 14px; transition: all 0.2s;
+      width: 100%; background: #0a0d14;
+      border: 1px solid #2a3142; color: #e2e8f0;
+      padding: 11px 14px; border-radius: 8px;
+      font-size: 14px; font-family: 'Inter', sans-serif;
+      outline: none; margin-bottom: 20px;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      letter-spacing: 3px;
     }
-    input:focus { border-color: var(--green); box-shadow: 0 0 12px rgba(0,255,136,0.15); }
+    input:focus {
+      border-color: #5271ff;
+      box-shadow: 0 0 0 3px rgba(82,113,255,0.15);
+    }
     button {
-      width: 100%; background: transparent;
-      border: 1px solid var(--border2);
-      color: var(--green); padding: 12px;
-      font-size: 12px; font-family: var(--ui); font-weight: 700;
-      letter-spacing: 4px; text-transform: uppercase;
-      cursor: pointer; border-radius: 2px;
-      transition: all 0.15s;
+      width: 100%; background: #5271ff; color: #fff;
+      border: none; border-radius: 8px;
+      padding: 12px; font-size: 14px; font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer; transition: background 0.15s, transform 0.1s;
     }
-    button:hover {
-      background: rgba(0,255,136,0.08);
-      border-color: var(--green);
-      box-shadow: 0 0 12px rgba(0,255,136,0.2);
+    button:hover { background: #6b87ff; }
+    button:active { transform: scale(0.98); }
+    .error {
+      background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3);
+      color: #ef4444; border-radius: 6px;
+      padding: 9px 12px; font-size: 12px; font-weight: 500;
+      margin-top: 14px; display: none; text-align: center;
     }
-    .error { color: #ff3355; font-size: 10px; text-align: center; margin-top: 12px;
-      letter-spacing: 2px; display: none; }
-    .hint { font-size: 9px; color: var(--text-dim); text-align: center;
-      margin-top: 24px; letter-spacing: 2px; }
-    @keyframes blink { 0%,100%{opacity:1}50%{opacity:0} }
-    .cursor::after { content:'█'; animation:blink 1s infinite; font-size:0.7em; margin-left:2px; }
+    .divider { border: none; border-top: 1px solid #2a3142; margin: 28px 0; }
+    .footer { font-size: 11px; color: #4a5568; text-align: center; }
   </style>
 </head>
 <body>
   <div class="card">
-    <div class="corner-br"></div>
-    <div class="corner-bl"></div>
-    <div class="title"><span class="logo-dot"></span>WP_PROSPECTOR</div>
-    <div class="subtitle">CLIENT SCOUT AI // ACCESS CONTROL</div>
-    <input type="password" id="pw" placeholder="········" autofocus
+    <div class="logo">
+      <div class="logo-icon">⚡</div>
+      <div>
+        <div class="logo-text">WP Prospector</div>
+        <div class="logo-sub">Client Scout AI</div>
+      </div>
+    </div>
+    <h1>Welcome back</h1>
+    <p class="subtitle">Enter your password to access the dashboard.</p>
+    <label for="pw">Password</label>
+    <input type="password" id="pw" placeholder="••••••••" autofocus
       onkeydown="if(event.key==='Enter')check()" />
-    <button onclick="check()">► AUTHENTICATE</button>
-    <div class="error" id="err">⚠ ACCESS DENIED // INVALID CREDENTIALS</div>
-    <div class="hint">AUTHORIZED PERSONNEL ONLY</div>
+    <button onclick="check()">Sign in →</button>
+    <div class="error" id="err">Incorrect password. Please try again.</div>
+    <hr class="divider" />
+    <div class="footer">Authorized access only · WP Prospector v2.0</div>
   </div>
   <script>
     const PASSWORD = "Clicker133984!";
