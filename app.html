@@ -675,7 +675,7 @@
 
                 {/* Screenshot */}
                 {selected.screenshot && (
-                  <div style={{ borderRadius:6px, overflow:"hidden", border:"1px solid var(--border)" }}>
+                  <div style={{ borderRadius:6, overflow:"hidden", border:"1px solid var(--border)" }}>
                     <div style={{ fontSize:11, color:"var(--text-muted)", padding:"6px 10px",
                       background:"var(--bg)", borderBottom:"1px solid var(--border)", fontWeight:500 }}>
                       Site Preview
@@ -692,7 +692,7 @@
                     {(selected.issues||[]).map(iss => (
                       <div key={iss} style={{ display:"flex", alignItems:"center", gap:8,
                         background:"var(--yellow-bg)", border:"1px solid var(--yellow)22",
-                        borderRadius:6px, padding:"6px 10px", fontSize:12, color:"var(--yellow)" }}>
+                        borderRadius:6, padding:"6px 10px", fontSize:12, color:"var(--yellow)" }}>
                         ⚠ {iss}
                       </div>
                     ))}
@@ -711,7 +711,7 @@
                     <>
                       <textarea value={notes} onChange={e=>setNotes(e.target.value)}
                         style={{ width:"100%", background:"var(--bg-input)", border:"1px solid var(--border)",
-                          color:"var(--text)", borderRadius:6px, padding:"10px",
+                          color:"var(--text)", borderRadius:6, padding:"10px",
                           fontSize:12, lineHeight:1.7, fontFamily:"Inter,sans-serif",
                           resize:"none", outline:"none", height:90 }} />
                       <PrimaryBtn onClick={() => saveNotes(selected.id)}
@@ -735,7 +735,7 @@
                     <>
                       <textarea value={outreach} onChange={e=>setOutreach(e.target.value)}
                         style={{ width:"100%", background:"var(--bg-input)", border:"1px solid var(--border)",
-                          color:"var(--text)", borderRadius:6px, padding:"10px",
+                          color:"var(--text)", borderRadius:6, padding:"10px",
                           fontSize:11.5, lineHeight:1.75, fontFamily:"Inter,sans-serif",
                           resize:"none", outline:"none", height:160 }} />
                       <GhostBtn onClick={() => navigator.clipboard.writeText(outreach)}
@@ -778,15 +778,15 @@
             {/* Summary stats */}
             {scans.length > 0 && (
               <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:12, marginBottom:20 }}>
-                <div style={{ background:"var(--bg-card)", border:"1px solid var(--border)", borderRadius:8px, padding:"16px 20px" }}>
+                <div style={{ background:"var(--bg-card)", border:"1px solid var(--border)", borderRadius:8, padding:"16px 20px" }}>
                   <div style={{ fontSize:28, fontWeight:700, color:"var(--accent)" }}>{scans.length}</div>
                   <div style={{ fontSize:12, color:"var(--text-muted)", marginTop:4 }}>Total scans</div>
                 </div>
-                <div style={{ background:"var(--bg-card)", border:"1px solid var(--border)", borderRadius:8px, padding:"16px 20px" }}>
+                <div style={{ background:"var(--bg-card)", border:"1px solid var(--border)", borderRadius:8, padding:"16px 20px" }}>
                   <div style={{ fontSize:28, fontWeight:700, color:"var(--green)" }}>{totalFound}</div>
                   <div style={{ fontSize:12, color:"var(--text-muted)", marginTop:4 }}>WordPress sites found</div>
                 </div>
-                <div style={{ background:"var(--bg-card)", border:"1px solid var(--border)", borderRadius:8px, padding:"16px 20px" }}>
+                <div style={{ background:"var(--bg-card)", border:"1px solid var(--border)", borderRadius:8, padding:"16px 20px" }}>
                   <div style={{ fontSize:28, fontWeight:700, color:"var(--yellow)" }}>{avgHitRate}%</div>
                   <div style={{ fontSize:12, color:"var(--text-muted)", marginTop:4 }}>Avg hit rate</div>
                 </div>
@@ -807,10 +807,10 @@
                 const hitRate = scan.scanned > 0 ? Math.round((scan.found/scan.scanned)*100) : 0;
                 return (
                   <div key={scan.id} style={{ background:"var(--bg-card)", border:"1px solid var(--border)",
-                    borderRadius:8px, padding:"16px 20px",
+                    borderRadius:8, padding:"16px 20px",
                     display:"flex", alignItems:"center", gap:20 }}>
                     <div style={{ width:32, height:32, background:"var(--accent-bg)",
-                      border:"1px solid var(--accent)33", borderRadius:6px,
+                      border:"1px solid var(--accent)33", borderRadius:6,
                       display:"flex", alignItems:"center", justifyContent:"center",
                       fontSize:11, fontWeight:700, color:"var(--accent)", flexShrink:0 }}>
                       #{i+1}
@@ -858,7 +858,7 @@
         <div onClick={onClick} className="fade-in"
           onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
           style={{
-            display:"flex", overflow:"hidden", borderRadius:8px,
+            display:"flex", overflow:"hidden", borderRadius:8,
             border:`1px solid ${selected ? "var(--accent)" : hover ? "#3a4560" : "var(--border)"}`,
             background: selected ? "var(--accent-bg)" : hover ? "var(--bg-hover)" : "var(--bg-card)",
             cursor:"pointer", transition:"all 0.15s",
